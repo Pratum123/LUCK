@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>📚 प्रश्नोत्तरी ऐप (JSON आयात सपोर्ट)</title>
+  <title>📚 प्रश्नोत्तरी ऐप (सभी विषयों का JSON सपोर्ट)</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -278,6 +278,32 @@
     .backup-actions .btn {
       flex: 1;
     }
+    .quiz-list {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 15px;
+      background: #f9f9f9;
+    }
+    .quiz-item {
+      padding: 8px 12px;
+      margin: 5px 0;
+      background: white;
+      border-radius: 6px;
+      border-left: 3px solid #3949ab;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .quiz-item-count {
+      background: #3949ab;
+      color: white;
+      border-radius: 12px;
+      padding: 2px 8px;
+      font-size: 12px;
+    }
     @media (max-width: 600px) {
       .result-content {
         flex-direction: column;
@@ -302,8 +328,8 @@
 </head>
 <body>
 <header>
-  <div>📚 प्रश्नोत्तरी ऐप (JSON आयात सपोर्ट)</div>
-  <div style="font-size: 16px; margin-top: 10px;">अब JSON फ़ाइलों से प्रश्न आयात कर सकते हैं</div>
+  <div>📚 प्रश्नोत्तरी ऐप (सभी विषयों का JSON सपोर्ट)</div>
+  <div style="font-size: 16px; margin-top: 10px;">अब सभी विषयों को एक JSON फ़ाइल में निर्यात/आयात कर सकते हैं</div>
 </header>
 <h2 id="pageTitle" style="text-align:center; color:#3949ab;"></h2>
 
@@ -353,44 +379,54 @@
   
   <!-- JSON बैकअप और आयात सेक्शन -->
   <div class="backup-section">
-    <h3 class="backup-title">📥 JSON बैकअप और आयात</h3>
+    <h3 class="backup-title">📥 JSON बैकअप और आयात (सभी विषय)</h3>
     <p style="text-align: center; margin-bottom: 15px;">
-      निर्यात किए गए JSON फ़ाइल से प्रश्न आयात करें या वर्तमान डेटा निर्यात करें
+      सभी विषयों और उपविषयों को एक JSON फ़ाइल में निर्यात करें या आयात करें
     </p>
     
     <div class="upload-btn-wrapper">
       <div class="upload-btn">
-        <span>📁 JSON फ़ाइल आयात करें</span>
+        <span>📁 JSON फ़ाइल आयात करें (सभी विषय)</span>
       </div>
       <input type="file" id="jsonImportFile" accept=".json">
     </div>
     
     <div class="backup-actions">
-      <button class="btn" onclick="importJSONData()">⬆️ JSON आयात करें</button>
-      <button class="btn" onclick="exportJSONData()">⬇️ JSON निर्यात करें</button>
+      <button class="btn" onclick="importAllJSONData()">⬆️ सभी विषय आयात करें</button>
+      <button class="btn" onclick="exportAllJSONData()">⬇️ सभी विषय निर्यात करें</button>
     </div>
     
     <div style="margin-top: 15px; background: #f9f9f9; padding: 15px; border-radius: 8px;">
-      <h4 style="margin-top: 0; color: #3949ab;">JSON फ़ाइल प्रारूप:</h4>
+      <h4 style="margin-top: 0; color: #3949ab;">JSON फ़ाइल प्रारूप (सभी विषय):</h4>
       <pre style="overflow: auto; max-height: 150px; background: white; padding: 10px; border-radius: 4px;">
 {
-  "subject": "विषय का नाम",
-  "subtopic": "उपविषय का नाम",
-  "questions": [
+  "quizzes": [
     {
-      "question": "प्रश्न टेक्स्ट",
-      "options": {
-        "A": "विकल्प A",
-        "B": "विकल्प B",
-        "C": "विकल्प C",
-        "D": "विकल्प D"
-      },
-      "correct": "A",
-      "explanation": "व्याख्या टेक्स्ट",
-      "image": "base64 छवि डेटा (वैकल्पिक)"
-    }
+      "subject": "विषय का नाम",
+      "subtopic": "उपविषय का नाम",
+      "questions": [
+        {
+          "question": "प्रश्न टेक्स्ट",
+          "options": {
+            "A": "विकल्प A",
+            "B": "विकल्प B",
+            "C": "विकल्प C",
+            "D": "विकल्प D"
+          },
+          "correct": "A",
+          "explanation": "व्याख्या टेक्स्ट",
+          "image": "base64 छवि डेटा (वैकल्पिक)"
+        }
+      ]
+    },
+    // अधिक विषय...
   ]
 }</pre>
+    </div>
+    
+    <div class="quiz-list" id="quizListContainer">
+      <h4 style="margin-top: 0; color: #3949ab;">डेटाबेस में विषय:</h4>
+      <div id="quizList">लोड हो रहा है...</div>
     </div>
   </div>
 </div>
@@ -528,6 +564,26 @@ async function saveQuizToDB(quizId, questions) {
   });
 }
 
+// डेटाबेस से सभी क्विज प्राप्त करें
+async function getAllQuizzesFromDB() {
+  if (!db) await openDB();
+  
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([STORE_NAME], 'readonly');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.getAll();
+    
+    request.onerror = (event) => {
+      console.error('सभी क्विज लोड करने में त्रुटि:', event.target.error);
+      reject(event.target.error);
+    };
+    
+    request.onsuccess = (event) => {
+      resolve(event.target.result);
+    };
+  });
+}
+
 // स्टोरेज उपयोग अपडेट करें
 function updateStorageUsage() {
   if (!navigator.storage || !navigator.storage.estimate) return;
@@ -621,6 +677,7 @@ async function saveQuestion() {
   clearForm();
   document.getElementById("questionCount").textContent = `🔢 कुल प्रश्न: ${questions.length}`;
   showAllQuestions();
+  updateQuizList();
 }
 
 // प्रश्न फॉर्मेट करें
@@ -703,6 +760,7 @@ async function deleteQuestion(index) {
     await saveQuizToDB(currentKey, questions);
     showAllQuestions();
     document.getElementById("questionCount").textContent = `🔢 कुल प्रश्न: ${questions.length}`;
+    updateQuizList();
   }
 }
 
@@ -884,6 +942,7 @@ async function populateQuiz() {
       document.getElementById("inputSection").style.display = "block";
       document.getElementById("questionCount").textContent = `🔢 कुल प्रश्न: ${questions.length}`;
       showAllQuestions();
+      updateQuizList();
     } else {
       if (questions.length === 0) {
         alert("❗ कोई प्रश्न नहीं मिला!");
@@ -899,8 +958,41 @@ async function populateQuiz() {
   }
 }
 
-// JSON डेटा आयात करें
-async function importJSONData() {
+// सभी क्विज सूची अपडेट करें
+async function updateQuizList() {
+  try {
+    const allQuizzes = await getAllQuizzesFromDB();
+    const quizList = document.getElementById('quizList');
+    
+    if (!allQuizzes || allQuizzes.length === 0) {
+      quizList.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">❌ डेटाबेस में कोई क्विज नहीं है</div>';
+      return;
+    }
+    
+    quizList.innerHTML = '';
+    
+    allQuizzes.forEach(quiz => {
+      // क्विज आईडी से विषय और उपविषय निकालें
+      const [, subject, subtopic] = quiz.id.split('_');
+      const quizItem = document.createElement('div');
+      quizItem.className = 'quiz-item';
+      quizItem.innerHTML = `
+        <div>
+          <strong>${subject}</strong> / ${subtopic}
+        </div>
+        <div class="quiz-item-count">${quiz.questions.length} प्रश्न</div>
+      `;
+      quizList.appendChild(quizItem);
+    });
+    
+  } catch (error) {
+    console.error('क्विज सूची अपडेट करने में त्रुटि:', error);
+    document.getElementById('quizList').innerHTML = 'त्रुटि: क्विज लोड नहीं हो सकीं';
+  }
+}
+
+// सभी विषयों का JSON डेटा आयात करें
+async function importAllJSONData() {
   const fileInput = document.getElementById('jsonImportFile');
   if (!fileInput.files || fileInput.files.length === 0) {
     alert('कृपया एक JSON फ़ाइल चुनें');
@@ -915,29 +1007,33 @@ async function importJSONData() {
       const jsonData = JSON.parse(e.target.result);
       
       // JSON डेटा सत्यापित करें
-      if (!jsonData.questions || !Array.isArray(jsonData.questions)) {
-        throw new Error('अमान्य JSON प्रारूप: प्रश्न सरणी गायब है');
+      if (!jsonData.quizzes || !Array.isArray(jsonData.quizzes)) {
+        throw new Error('अमान्य JSON प्रारूप: क्विज सरणी गायब है');
       }
       
       // आयात करने से पहले संदेश दिखाएं
-      if (!confirm(`क्या आप वाकई ${jsonData.questions.length} प्रश्न आयात करना चाहते हैं?\n\nविषय: ${jsonData.subject || 'निर्दिष्ट नहीं'}\nउपविषय: ${jsonData.subtopic || 'निर्दिष्ट नहीं'}`)) {
+      if (!confirm(`क्या आप वाकई ${jsonData.quizzes.length} क्विज आयात करना चाहते हैं?\n\nकुल प्रश्न: ${jsonData.quizzes.reduce((acc, quiz) => acc + (quiz.questions ? quiz.questions.length : 0), 0)}`)) {
         return;
       }
       
-      // वर्तमान प्रश्नों के साथ मर्ज करें
-      const currentKey = `quiz_${localStorage.getItem("selectedMain")}_${localStorage.getItem("selectedSub")}`;
-      const existingQuestions = await loadQuizFromDB(currentKey) || [];
-      const mergedQuestions = [...existingQuestions, ...jsonData.questions];
+      // प्रगति संदेश
+      alert(`⏳ ${jsonData.quizzes.length} क्विज आयात की जा रही हैं...`);
       
-      // IndexedDB में सहेजें
-      await saveQuizToDB(currentKey, mergedQuestions);
+      // प्रत्येक क्विज को डेटाबेस में सहेजें
+      for (const quiz of jsonData.quizzes) {
+        if (!quiz.subject || !quiz.subtopic || !quiz.questions) {
+          console.warn('अमान्य क्विज डेटा:', quiz);
+          continue;
+        }
+        
+        const quizId = `quiz_${quiz.subject}_${quiz.subtopic}`;
+        await saveQuizToDB(quizId, quiz.questions);
+      }
       
       // UI अपडेट करें
-      questions = mergedQuestions;
-      document.getElementById("questionCount").textContent = `🔢 कुल प्रश्न: ${questions.length}`;
-      showAllQuestions();
+      updateQuizList();
       
-      alert(`✅ ${jsonData.questions.length} प्रश्न सफलतापूर्वक आयात किए गए!`);
+      alert(`✅ ${jsonData.quizzes.length} क्विज सफलतापूर्वक आयात की गईं!`);
       
     } catch (error) {
       console.error('JSON आयात त्रुटि:', error);
@@ -948,31 +1044,52 @@ async function importJSONData() {
   reader.readAsText(file);
 }
 
-// JSON डेटा निर्यात करें
-async function exportJSONData() {
-  const main = localStorage.getItem("selectedMain") || 'अज्ञात';
-  const sub = localStorage.getItem("selectedSub") || 'अज्ञात';
-  
-  const exportData = {
-    subject: main,
-    subtopic: sub,
-    questions: questions,
-    exportedAt: new Date().toISOString()
-  };
-  
-  const jsonStr = JSON.stringify(exportData, null, 2);
-  const blob = new Blob([jsonStr], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `प्रश्नोत्तरी_${main}_${sub}_${new Date().toISOString().slice(0,10)}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  
-  alert(`📤 ${questions.length} प्रश्नों को JSON फ़ाइल के रूप में निर्यात किया गया!`);
+// सभी विषयों का JSON डेटा निर्यात करें
+async function exportAllJSONData() {
+  try {
+    const allQuizzes = await getAllQuizzesFromDB();
+    
+    if (!allQuizzes || allQuizzes.length === 0) {
+      alert('❗ निर्यात करने के लिए कोई क्विज नहीं है');
+      return;
+    }
+    
+    // निर्यात के लिए डेटा तैयार करें
+    const exportData = {
+      exportedAt: new Date().toISOString(),
+      quizzes: allQuizzes.map(quiz => {
+        // क्विज आईडी से विषय और उपविषय निकालें
+        const [, subject, subtopic] = quiz.id.split('_');
+        return {
+          subject: subject || 'अज्ञात',
+          subtopic: subtopic || 'अज्ञात',
+          questions: quiz.questions,
+          lastUpdated: quiz.lastUpdated
+        };
+      })
+    };
+    
+    const jsonStr = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `सभी_विषय_प्रश्नोत्तरी_${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    const totalQuizzes = allQuizzes.length;
+    const totalQuestions = allQuizzes.reduce((acc, quiz) => acc + quiz.questions.length, 0);
+    
+    alert(`📤 ${totalQuizzes} क्विज (${totalQuestions} प्रश्न) JSON फ़ाइल के रूप में निर्यात किए गए!`);
+    
+  } catch (error) {
+    console.error('निर्यात त्रुटि:', error);
+    alert('❗ सभी विषय निर्यात करने में त्रुटि: ' + error.message);
+  }
 }
 
 // ऐप इनिशियलाइज़ करें
