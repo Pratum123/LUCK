@@ -221,7 +221,7 @@
       justify-content: center;
       overflow: hidden;
       border-radius: 8px;
-      background: #f8f9fa;
+      background: #f8f9f9;
       border: 1px solid #e0e0e0;
     }
     .question-image {
@@ -313,13 +313,13 @@
   
   <div class="upload-btn-wrapper">
     <div class="upload-btn">
-      <span>📷 छवि अपलोड करें (वैकल्पिक)</span>
+      <span>📷 प्रश्न के लिए छवि अपलोड करें (वैकल्पिक)</span>
     </div>
     <input type="file" id="imageUpload" accept="image/*">
   </div>
   
   <div class="image-preview-container">
-    <img id="imagePreview" class="image-preview" alt="छवि पूर्वावलोकन">
+    <img id="imagePreview" class="image-preview" alt="प्रश्न छवि पूर्वावलोकन">
     <button id="removeImageBtn" class="remove-image-btn" style="display:none;">❌ छवि हटाएं</button>
   </div>
   
@@ -334,6 +334,18 @@
     <option value="D">D</option>
   </select>
   <textarea id="explanation" placeholder="व्याख्या लिखें (सामान्य टेक्स्ट)"></textarea>
+  
+  <div class="upload-btn-wrapper">
+    <div class="upload-btn">
+      <span>📷 व्याख्या के लिए छवि अपलोड करें (वैकल्पिक)</span>
+    </div>
+    <input type="file" id="explanationImageUpload" accept="image/*">
+  </div>
+  
+  <div class="image-preview-container">
+    <img id="explanationImagePreview" class="image-preview" alt="व्याख्या छवि पूर्वावलोकन">
+    <button id="removeExplanationImageBtn" class="remove-image-btn" style="display:none;">❌ व्याख्या छवि हटाएं</button>
+  </div>
   
   <div class="action-buttons">
     <button class="btn" onclick="saveQuestion()">💾 सेव करें</button>
@@ -351,7 +363,6 @@
   <div id="questionCount"></div>
   <div id="questionList"></div>
   
-  <!-- JSON बैकअप और आयात सेक्शन -->
   <div class="backup-section">
     <h3 class="backup-title">📥 JSON बैकअप और आयात</h3>
     <p style="text-align: center; margin-bottom: 15px;">
@@ -387,7 +398,8 @@
       },
       "correct": "A",
       "explanation": "व्याख्या टेक्स्ट",
-      "image": "base64 छवि डेटा (वैकल्पिक)"
+      "image": "base64 छवि डेटा (वैकल्पिक)",
+      "explanationImage": "base64 व्याख्या छवि डेटा (वैकल्पिक)"
     }
   ]
 }</pre>
@@ -448,6 +460,7 @@ let correctCount = 0;
 let incorrectCount = 0;
 let editIndex = -1;
 let currentImage = null;
+let currentExplanationImage = null;
 
 // IndexedDB खोलें
 function openDB() {
@@ -540,7 +553,7 @@ function updateStorageUsage() {
   });
 }
 
-// इमेज अपलोड हैंडलर
+// प्रश्न इमेज अपलोड हैंडलर
 document.getElementById("imageUpload").addEventListener("change", function(event) {
   const file = event.target.files[0];
   if (file) {
@@ -555,13 +568,37 @@ document.getElementById("imageUpload").addEventListener("change", function(event
   }
 });
 
-// इमेज रिमूव हैंडलर
+// प्रश्न इमेज रिमूव हैंडलर
 document.getElementById("removeImageBtn").addEventListener("click", function() {
   currentImage = null;
   document.getElementById("imagePreview").src = "";
   document.getElementById("imagePreview").style.display = "none";
   document.getElementById("removeImageBtn").style.display = "none";
   document.getElementById("imageUpload").value = "";
+});
+
+// व्याख्या इमेज अपलोड हैंडलर
+document.getElementById("explanationImageUpload").addEventListener("change", function(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      currentExplanationImage = e.target.result;
+      document.getElementById("explanationImagePreview").src = currentExplanationImage;
+      document.getElementById("explanationImagePreview").style.display = "block";
+      document.getElementById("removeExplanationImageBtn").style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+// व्याख्या इमेज रिमूव हैंडलर
+document.getElementById("removeExplanationImageBtn").addEventListener("click", function() {
+  currentExplanationImage = null;
+  document.getElementById("explanationImagePreview").src = "";
+  document.getElementById("explanationImagePreview").style.display = "none";
+  document.getElementById("removeExplanationImageBtn").style.display = "none";
+  document.getElementById("explanationImageUpload").value = "";
 });
 
 // फॉर्म साफ करें
@@ -579,6 +616,12 @@ function clearForm() {
   document.getElementById("imagePreview").style.display = "none";
   document.getElementById("removeImageBtn").style.display = "none";
   document.getElementById("imageUpload").value = "";
+  
+  currentExplanationImage = null;
+  document.getElementById("explanationImagePreview").src = "";
+  document.getElementById("explanationImagePreview").style.display = "none";
+  document.getElementById("removeExplanationImageBtn").style.display = "none";
+  document.getElementById("explanationImageUpload").value = "";
   
   editIndex = -1;
 }
@@ -603,7 +646,8 @@ async function saveQuestion() {
     options: { A, B, C, D },
     correct,
     explanation: exp,
-    image: currentImage
+    image: currentImage,
+    explanationImage: currentExplanationImage
   };
   
   const currentKey = `quiz_${localStorage.getItem("selectedMain")}_${localStorage.getItem("selectedSub")}`;
@@ -657,7 +701,8 @@ function showAllQuestions() {
         <button class="edit-btn" onclick="editQuestion(${index})">✏️</button>
         <button class="edit-btn" onclick="deleteQuestion(${index})" style="right:25px; background:#f44336;">🗑️</button>
         <div class="question-text">Q${index + 1}: ${formatQuestionText(q.question)}</div>
-        ${q.image ? '<div style="font-size:12px; color:#666; margin-top:5px;">📷 छवि जुड़ी हुई है</div>' : ''}
+        ${q.image ? '<div style="font-size:12px; color:#666; margin-top:5px;">📷 प्रश्न छवि जुड़ी हुई है</div>' : ''}
+        ${q.explanationImage ? '<div style="font-size:12px; color:#666; margin-top:5px;">📷 व्याख्या छवि जुड़ी हुई है</div>' : ''}
       </div>
     `;
     listDiv.appendChild(div);
@@ -682,8 +727,21 @@ function editQuestion(index) {
     document.getElementById("removeImageBtn").style.display = "block";
   } else {
     currentImage = null;
+    document.getElementById("imagePreview").src = "";
     document.getElementById("imagePreview").style.display = "none";
     document.getElementById("removeImageBtn").style.display = "none";
+  }
+  
+  if (q.explanationImage) {
+    currentExplanationImage = q.explanationImage;
+    document.getElementById("explanationImagePreview").src = q.explanationImage;
+    document.getElementById("explanationImagePreview").style.display = "block";
+    document.getElementById("removeExplanationImageBtn").style.display = "block";
+  } else {
+    currentExplanationImage = null;
+    document.getElementById("explanationImagePreview").src = "";
+    document.getElementById("explanationImagePreview").style.display = "none";
+    document.getElementById("removeExplanationImageBtn").style.display = "none";
   }
   
   editIndex = index;
@@ -691,7 +749,6 @@ function editQuestion(index) {
   document.getElementById("practiceSection").style.display = "none";
   document.getElementById("pageTitle").textContent = "✏️ प्रश्न संपादित करें";
   
-  // स्क्रॉल शीर्ष पर ले जाएं
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -785,7 +842,15 @@ function handleAnswer(selected) {
   
   const expl = document.createElement("div");
   expl.className = "explanation";
-  expl.innerHTML = `<strong>📘 व्याख्या:</strong><br>${(q.explanation || 'कोई व्याख्या नहीं दी गई है').replace(/\n/g, "<br>")}`;
+  let explanationContent = `<strong>📘 व्याख्या:</strong><br>${(q.explanation || 'कोई व्याख्या नहीं दी गई है').replace(/\n/g, "<br>")}`;
+  if (q.explanationImage) {
+    explanationContent += `
+      <div class="question-image-container">
+        <img src="${q.explanationImage}" class="question-image" alt="व्याख्या छवि">
+      </div>
+    `;
+  }
+  expl.innerHTML = explanationContent;
   optionsDiv.appendChild(expl);
   
   if (selected === q.correct) {
@@ -877,6 +942,7 @@ async function populateQuiz() {
     incorrectCount = 0;
     editIndex = -1;
     currentImage = null;
+    currentExplanationImage = null;
     
     document.getElementById("pageTitle").textContent = mode === "input" ? "➕ प्रश्न जोड़ें" : "🎯 अभ्यास";
     
@@ -914,25 +980,20 @@ async function importJSONData() {
     try {
       const jsonData = JSON.parse(e.target.result);
       
-      // JSON डेटा सत्यापित करें
       if (!jsonData.questions || !Array.isArray(jsonData.questions)) {
         throw new Error('अमान्य JSON प्रारूप: प्रश्न सरणी गायब है');
       }
       
-      // आयात करने से पहले संदेश दिखाएं
       if (!confirm(`क्या आप वाकई ${jsonData.questions.length} प्रश्न आयात करना चाहते हैं?\n\nविषय: ${jsonData.subject || 'निर्दिष्ट नहीं'}\nउपविषय: ${jsonData.subtopic || 'निर्दिष्ट नहीं'}`)) {
         return;
       }
       
-      // वर्तमान प्रश्नों के साथ मर्ज करें
       const currentKey = `quiz_${localStorage.getItem("selectedMain")}_${localStorage.getItem("selectedSub")}`;
       const existingQuestions = await loadQuizFromDB(currentKey) || [];
       const mergedQuestions = [...existingQuestions, ...jsonData.questions];
       
-      // IndexedDB में सहेजें
       await saveQuizToDB(currentKey, mergedQuestions);
       
-      // UI अपडेट करें
       questions = mergedQuestions;
       document.getElementById("questionCount").textContent = `🔢 कुल प्रश्न: ${questions.length}`;
       showAllQuestions();
@@ -977,7 +1038,6 @@ async function exportJSONData() {
 
 // ऐप इनिशियलाइज़ करें
 window.onload = async function() {
-  // डेमो उद्देश्यों के लिए
   if (!localStorage.getItem("selectedMain")) {
     localStorage.setItem("selectedMain", "demo");
     localStorage.setItem("selectedSub", "demo");
@@ -986,10 +1046,8 @@ window.onload = async function() {
   
   await populateQuiz();
   
-  // 5 सेकंड के बाद स्टोरेज उपयोग अपडेट करें
   setTimeout(updateStorageUsage, 5000);
   
-  // JSON आयात बटन के लिए इवेंट लिस्नर जोड़ें
   document.getElementById('jsonImportFile').addEventListener('change', function() {
     document.querySelector('.upload-btn span').textContent = 
       `चयनित फ़ाइल: ${this.files[0].name}`;
