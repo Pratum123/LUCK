@@ -5,40 +5,11 @@
   <title>📋 क्रिया चयन</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f6fb;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      color: #3949ab;
-    }
-    .section {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-      margin: 20px auto;
-      max-width: 600px;
-    }
-    .btn {
-      width: 100%;
-      padding: 16px;
-      font-size: 18px;
-      margin: 10px 0;
-      border-radius: 8px;
-      border: none;
-      font-weight: bold;
-      background-color: #3949ab;
-      color: white;
-      cursor: pointer;
-    }
-    .info {
-      margin-bottom: 20px;
-      font-size: 18px;
-      text-align: center;
-    }
+    body { font-family: 'Segoe UI', sans-serif; background: #f4f6fb; padding:20px; }
+    h1 { text-align:center; color:#3949ab; }
+    .section { background:white; padding:20px; border-radius:12px; box-shadow:0 0 8px rgba(0,0,0,0.1); margin:20px auto; max-width:600px; }
+    .btn { width:100%; padding:16px; font-size:18px; margin:10px 0; border-radius:8px; border:none; font-weight:bold; background-color:#3949ab; color:white; cursor:pointer; }
+    .info { margin-bottom:20px; font-size:18px; text-align:center; }
   </style>
 </head>
 <body>
@@ -67,7 +38,8 @@
     window.location.href = "index.html";
   }
 
-  document.getElementById("showMain").textContent = main[0].toUpperCase() + main.slice(1);
+  // show with capitalization if needed
+  document.getElementById("showMain").textContent = main.charAt(0).toUpperCase() + main.slice(1);
   document.getElementById("showSub").textContent = sub;
 
   function goToQuiz(mode) {
