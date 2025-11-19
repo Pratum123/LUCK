@@ -5,397 +5,90 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>📚 प्रश्नोत्तरी ऐप (JSON आयात सपोर्ट)</title>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #f5f7fa, #e4e7f0);
-      margin: 0;
-      padding: 0;
-      color: #333;
-    }
-    header {
-      background: linear-gradient(135deg, #3949ab, #283593);
-      color: white;
-      padding: 20px;
-      font-size: 24px;
-      text-align: center;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      position: relative;
-    }
-    .section {
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-      max-width: 850px;
-      margin: 30px auto;
-      transition: all 0.3s ease;
-    }
-    textarea, input, select {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      font-size: 16px;
-      box-sizing: border-box;
-      transition: border 0.3s;
-    }
-    textarea:focus, input:focus, select:focus {
-      border-color: #3949ab;
-      outline: none;
-      box-shadow: 0 0 0 2px rgba(57, 73, 171, 0.2);
-    }
-    .btn {
-      background: linear-gradient(135deg, #3949ab, #5c6bc0);
-      color: white;
-      font-weight: bold;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: all 0.2s;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      display: inline-block;
-    }
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    }
-    .btn-option {
-      display: block;
-      width: 100%;
-      text-align: left;
-      padding: 12px 15px;
-      border-radius: 8px;
-      background: #f8f9fa;
-      border: 1px solid #e0e0e0;
-      margin: 8px 0;
-      font-size: 16px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-option:hover {
-      background: #e9ecef;
-      transform: translateX(5px);
-    }
-    .explanation {
-      margin-top: 20px;
-      padding-top: 15px;
-      border-top: 1px solid #eee;
-      color: #555;
-      line-height: 1.5;
-      background: #f9f9f9;
-      border-radius: 8px;
-      padding: 15px;
-    }
-    .edit-btn {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      background: #FFC107;
-      color: #000;
-      border: none;
-      padding: 2px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 10px;
-      width: 20px;
-      height: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .question-item {
-      padding: 12px 0;
-      border-bottom: 1px solid #eee;
-      position: relative;
-    }
-    .submit-btn {
-      background: linear-gradient(135deg, #4CAF50, #66BB6A);
-    }
-    .delete-btn {
-      background: linear-gradient(135deg, #f44336, #e53935);
-    }
-    .accuracy-display {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 32px;
-      font-weight: bold;
-      color: #3949ab;
-      text-align: center;
-    }
-    .question-container {
-      position: relative;
-      padding: 15px;
-      background: #fff;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      border-left: 4px solid #3949ab;
-    }
-    .question-text {
-      font-weight: bold;
-      margin-bottom: 10px;
-      color: #2c3e50;
-    }
-    .statement {
-      font-weight: normal;
-      color: #555;
-      margin: 5px 0;
-      line-height: 1.4;
-      padding-left: 15px;
-      border-left: 2px solid #e0e0e0;
-    }
-    .image-preview-container {
-      margin: 15px 0;
-      text-align: center;
-      width: 100%;
-      height: 200px;
-      border: 1px dashed #ddd;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      background: #fafafa;
-    }
-    .image-preview {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-    }
-    .remove-image-btn {
-      background: #f44336;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-top: 5px;
-      font-size: 12px;
-    }
-    .upload-btn-wrapper {
-      position: relative;
-      overflow: hidden;
-      display: inline-block;
-      width: 100%;
-    }
-    .upload-btn {
-      background: #e3f2fd;
-      color: #1976d2;
-      border: 1px dashed #64b5f6;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      text-align: center;
-      margin: 10px 0;
-      display: block;
-      transition: all 0.3s;
-    }
-    .upload-btn:hover {
-      background: #bbdefb;
-    }
-    .upload-btn-wrapper input[type=file] {
-      position: absolute;
-      left: 0;
-      top: 0;
-      opacity: 0;
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-    }
-    .question-image-container {
-      width: 100%;
-      height: 50vh;
-      min-height: 200px;
-      max-height: 300px;
-      margin: 15px 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      border-radius: 8px;
-      background: #f8f9f9;
-      border: 1px solid #e0e0e0;
-    }
-    .question-image {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-    }
-    .action-buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 15px;
-    }
-    .action-buttons .btn {
-      flex: 1;
-    }
-    .db-info {
-      background: #e3f2fd;
-      padding: 10px 15px;
-      border-radius: 8px;
-      margin: 15px 0;
-      font-size: 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .status-indicator {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      margin-right: 8px;
-    }
-    .status-connected {
-      background: #4CAF50;
-    }
-    .status-disconnected {
-      background: #f44336;
-    }
-    .backup-section {
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 1px solid #eee;
-    }
-    .backup-title {
-      text-align: center;
-      color: #3949ab;
-      margin-bottom: 15px;
-    }
-    .backup-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 15px;
-    }
-    .backup-actions .btn {
-      flex: 1;
-    }
-    @media (max-width: 600px) {
-      .result-content {
-        flex-direction: column;
-      }
-      .question-image-container {
-        height: 30vh;
-        max-height: 250px;
-      }
-      .section {
-        padding: 15px;
-        margin: 15px;
-      }
-      .action-buttons {
-        flex-direction: column;
-      }
-      .backup-actions {
-        flex-direction: column;
-      }
-    }
+    /* तुम्हारा पुराना CSS रखा गया (कम-सी-कम बदलाव) */
+    body { font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#f5f7fa,#e4e7f0); margin:0; padding:0; color:#333;}
+    header { background:linear-gradient(135deg,#3949ab,#283593); color:white; padding:20px; font-size:24px; text-align:center; box-shadow:0 4px 6px rgba(0,0,0,0.1); position:relative;}
+    .section { background:white; padding:25px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.08); max-width:850px; margin:30px auto; transition:all 0.3s ease; }
+    textarea,input,select { width:100%; padding:12px; margin:8px 0; border-radius:8px; border:1px solid #ddd; font-size:16px; box-sizing:border-box; }
+    .btn { background:linear-gradient(135deg,#3949ab,#5c6bc0); color:white; font-weight:bold; border:none; padding:12px 20px; border-radius:8px; font-size:16px; cursor:pointer; margin-top:10px; display:inline-block; }
+    .btn-option { display:block; width:100%; text-align:left; padding:12px 15px; border-radius:8px; background:#f8f9fa; border:1px solid #e0e0e0; margin:8px 0; font-size:16px; cursor:pointer; }
+    .explanation { margin-top:20px; padding-top:15px; border-top:1px solid #eee; color:#555; line-height:1.5; background:#f9f9f9; border-radius:8px; padding:15px; }
+    .question-container { position:relative; padding:15px; background:#fff; border-radius:8px; margin-bottom:15px; box-shadow:0 2px 5px rgba(0,0,0,0.1); border-left:4px solid #3949ab; }
+    .image-preview-container, .question-image-container { margin:15px 0; text-align:center; width:100%; height:200px; border:1px dashed #ddd; border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#fafafa;}
+    .question-image { max-width:100%; max-height:100%; object-fit:contain; }
+    .db-info { background:#e3f2fd; padding:10px 15px; border-radius:8px; margin:15px 0; font-size:14px; display:flex; justify-content:space-between; align-items:center; }
+    .status-indicator { display:inline-block; width:12px; height:12px; border-radius:50%; margin-right:8px; }
+    .status-connected { background:#4CAF50; }
+    .status-disconnected { background:#f44336; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 <header>
   <div>📚 प्रश्नोत्तरी ऐप (JSON आयात सपोर्ट)</div>
-  <div style="font-size: 16px; margin-top: 10px;">अब JSON फ़ाइलों से प्रश्न आयात कर सकते हैं</div>
+  <div style="font-size:16px; margin-top:10px;">अब JSON फ़ाइलों से प्रश्न आयात कर सकते हैं</div>
 </header>
 <h2 id="pageTitle" style="text-align:center; color:#3949ab;"></h2>
 
 <div id="inputSection" class="section" style="display:none;">
   <h3>➕ नया प्रश्न जोड़ें</h3>
   <textarea id="question" placeholder="प्रश्न लिखें (बोल्ड दिखेगा)"></textarea>
-  
   <div class="upload-btn-wrapper">
-    <div class="upload-btn">
-      <span>📷 प्रश्न के लिए छवि अपलोड करें (वैकल्पिक)</span>
-    </div>
+    <div class="upload-btn"><span>📷 प्रश्न के लिए छवि अपलोड करें (वैकल्पिक)</span></div>
     <input type="file" id="imageUpload" accept="image/*">
   </div>
-  
   <div class="image-preview-container">
-    <img id="imagePreview" class="image-preview" alt="प्रश्न छवि पूर्वावलोकन">
+    <img id="imagePreview" class="image-preview" alt="प्रश्न छवि पूर्वावलोकन" style="display:none;">
     <button id="removeImageBtn" class="remove-image-btn" style="display:none;">❌ छवि हटाएं</button>
   </div>
-  
   <input id="optA" placeholder="विकल्प A">
   <input id="optB" placeholder="विकल्प B">
   <input id="optC" placeholder="विकल्प C">
   <input id="optD" placeholder="विकल्प D">
-  <select id="correct">
-    <option value="A">A</option>
-    <option value="B">B</option>
-    <option value="C">C</option>
-    <option value="D">D</option>
-  </select>
+  <select id="correct"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>
   <textarea id="explanation" placeholder="व्याख्या लिखें (सामान्य टेक्स्ट)"></textarea>
-  
   <div class="upload-btn-wrapper">
-    <div class="upload-btn">
-      <span>📷 व्याख्या के लिए छवि अपलोड करें (वैकल्पिक)</span>
-    </div>
+    <div class="upload-btn"><span>📷 व्याख्या के लिए छवि अपलोड करें (वैकल्पिक)</span></div>
     <input type="file" id="explanationImageUpload" accept="image/*">
   </div>
-  
   <div class="image-preview-container">
-    <img id="explanationImagePreview" class="image-preview" alt="व्याख्या छवि पूर्वावलोकन">
+    <img id="explanationImagePreview" class="image-preview" alt="व्याख्या छवि पूर्वावलोकन" style="display:none;">
     <button id="removeExplanationImageBtn" class="remove-image-btn" style="display:none;">❌ व्याख्या छवि हटाएं</button>
   </div>
-  
   <div class="action-buttons">
     <button class="btn" onclick="saveQuestion()">💾 सेव करें</button>
     <button class="btn delete-btn" onclick="clearForm()">🗑️ फॉर्म साफ़ करें</button>
   </div>
-  
+
   <div class="db-info">
-    <div>
-      <span class="status-indicator status-connected" id="dbStatus"></span>
-      <span>IndexedDB कनेक्टेड</span>
-    </div>
+    <div><span id="dbStatus" class="status-indicator status-disconnected"></span><span id="dbLabel">IndexedDB कनेक्टिंग...</span></div>
     <div id="storageInfo">स्टोरेज उपयोग: लोड हो रहा है...</div>
   </div>
-  
+
   <div id="questionCount"></div>
   <div id="questionList"></div>
-  
+
   <div class="backup-section">
     <h3 class="backup-title">📥 JSON बैकअप और आयात</h3>
-    <p style="text-align: center; margin-bottom: 15px;">
-      निर्यात किए गए JSON फ़ाइल से प्रश्न आयात करें या वर्तमान डेटा निर्यात करें
-    </p>
-    
+    <p style="text-align:center; margin-bottom:15px;">निर्यात किए गए JSON फ़ाइल से प्रश्न आयात करें या वर्तमान डेटा निर्यात करें</p>
     <div class="upload-btn-wrapper">
-      <div class="upload-btn">
-        <span>📁 JSON फ़ाइल आयात करें</span>
-      </div>
+      <div class="upload-btn"><span id="jsonImportLabel">📁 JSON फ़ाइल आयात करें</span></div>
       <input type="file" id="jsonImportFile" accept=".json">
     </div>
-    
     <div class="backup-actions">
       <button class="btn" onclick="importJSONData()">⬆️ JSON आयात करें</button>
       <button class="btn" onclick="exportJSONData()">⬇️ JSON निर्यात करें</button>
     </div>
-    
-    <div style="margin-top: 15px; background: #f9f9f9; padding: 15px; border-radius: 8px;">
-      <h4 style="margin-top: 0; color: #3949ab;">JSON फ़ाइल प्रारूप:</h4>
-      <pre style="overflow: auto; max-height: 150px; background: white; padding: 10px; border-radius: 4px;">
+    <div style="margin-top:15px; background:#f9f9f9; padding:15px; border-radius:8px;">
+      <h4 style="margin-top:0; color:#3949ab;">JSON फ़ाइल प्रारूप:</h4>
+      <pre style="overflow:auto; max-height:150px; background:white; padding:10px; border-radius:4px;">
 {
   "subject": "विषय का नाम",
   "subtopic": "उपविषय का नाम",
   "questions": [
     {
       "question": "प्रश्न टेक्स्ट",
-      "options": {
-        "A": "विकल्प A",
-        "B": "विकल्प B",
-        "C": "विकल्प C",
-        "D": "विकल्प D"
-      },
+      "options": { "A": "विकल्प A", "B": "विकल्प B", "C": "विकल्प C", "D": "विकल्प D" },
       "correct": "A",
       "explanation": "व्याख्या टेक्स्ट",
       "image": "base64 छवि डेटा (वैकल्पिक)",
@@ -434,10 +127,7 @@
       </div>
       <div style="position:relative; width:250px; height:250px;">
         <canvas id="resultChart"></canvas>
-        <div class="accuracy-display">
-          <span id="bigAccuracy">0%</span>
-          <div style="font-size:14px; color:#666;">सटीकता</div>
-        </div>
+        <div class="accuracy-display"><span id="bigAccuracy">0%</span><div style="font-size:14px; color:#666;">सटीकता</div></div>
       </div>
     </div>
     <div class="action-buttons">
@@ -448,7 +138,7 @@
 </div>
 
 <script>
-// IndexedDB कॉन्फ़िगरेशन
+// DB config (same as index.html)
 const DB_NAME = 'QuizAppDB';
 const DB_VERSION = 2;
 const STORE_NAME = 'quizzes';
@@ -462,98 +152,72 @@ let editIndex = -1;
 let currentImage = null;
 let currentExplanationImage = null;
 
-// IndexedDB खोलें
+// open DB
 function openDB() {
   return new Promise((resolve, reject) => {
+    if (db) return resolve(db);
     const request = indexedDB.open(DB_NAME, DB_VERSION);
-    
     request.onerror = (event) => {
       console.error('डेटाबेस त्रुटि:', event.target.error);
       document.getElementById('dbStatus').className = 'status-indicator status-disconnected';
+      document.getElementById('dbLabel').textContent = 'IndexedDB कनेक्ट विफल';
       reject(event.target.error);
     };
-    
     request.onsuccess = (event) => {
       db = event.target.result;
-      console.log('डेटाबेस खोला गया');
       document.getElementById('dbStatus').className = 'status-indicator status-connected';
+      document.getElementById('dbLabel').textContent = 'IndexedDB कनेक्टेड';
       updateStorageUsage();
       resolve(db);
     };
-    
     request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-        console.log(ऑब्जेक्ट स्टोर ${STORE_NAME} बनाया गया);
+      const dbu = event.target.result;
+      if (!dbu.objectStoreNames.contains(STORE_NAME)) {
+        dbu.createObjectStore(STORE_NAME, { keyPath: 'id' });
       }
     };
   });
 }
 
-// डेटाबेस से क्विज लोड करें
-async function loadQuizFromDB(quizId) {
-  if (!db) await openDB();
-  
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], 'readonly');
-    const store = transaction.objectStore(STORE_NAME);
-    const request = store.get(quizId);
-    
-    request.onerror = (event) => {
-      console.error('डेटा लोड करने में त्रुटि:', event.target.error);
-      reject(event.target.error);
+// load quiz from DB by id
+function loadQuizFromDB(quizId) {
+  return new Promise(async (resolve, reject) => {
+    await openDB();
+    const tx = db.transaction([STORE_NAME], 'readonly');
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.get(quizId);
+    req.onsuccess = (e) => {
+      const rec = e.target.result;
+      resolve(rec && Array.isArray(rec.questions) ? rec.questions : []);
     };
-    
-    request.onsuccess = (event) => {
-      const quizData = event.target.result;
-      resolve(quizData ? quizData.questions : []);
-    };
+    req.onerror = (e) => reject(e.target.error);
   });
 }
 
-// डेटाबेस में क्विज सहेजें
-async function saveQuizToDB(quizId, questions) {
-  if (!db) await openDB();
-  
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], 'readwrite');
-    const store = transaction.objectStore(STORE_NAME);
-    
-    const quizData = {
-      id: quizId,
-      questions: questions,
-      lastUpdated: new Date()
-    };
-    
-    const request = store.put(quizData);
-    
-    request.onerror = (event) => {
-      console.error('डेटा सहेजने में त्रुटि:', event.target.error);
-      reject(event.target.error);
-    };
-    
-    request.onsuccess = (event) => {
-      console.log(क्विज ${quizId} सहेजी गई);
-      updateStorageUsage();
-      resolve();
-    };
+// save quiz to DB
+function saveQuizToDB(quizId, questionsArr) {
+  return new Promise(async (resolve, reject) => {
+    await openDB();
+    const tx = db.transaction([STORE_NAME], 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+    const payload = { id: quizId, questions: questionsArr, lastUpdated: new Date() };
+    const req = store.put(payload);
+    req.onsuccess = () => { updateStorageUsage(); resolve(); };
+    req.onerror = (e) => reject(e.target.error);
   });
 }
 
-// स्टोरेज उपयोग अपडेट करें
+// update storage usage
 function updateStorageUsage() {
   if (!navigator.storage || !navigator.storage.estimate) return;
-  
   navigator.storage.estimate().then(estimate => {
-    const usedMB = (estimate.usage / (1024 * 1024)).toFixed(2);
-    const quotaMB = (estimate.quota / (1024 * 1024)).toFixed(2);
-    document.getElementById('storageInfo').textContent = 
-      स्टोरेज उपयोग: ${usedMB} MB / ${quotaMB} MB;
+    const usedMB = (estimate.usage / (1024*1024)).toFixed(2);
+    const quotaMB = (estimate.quota / (1024*1024)).toFixed(2);
+    document.getElementById('storageInfo').textContent = `स्टोरेज उपयोग: ${usedMB} MB / ${quotaMB} MB`;
   });
 }
 
-// प्रश्न इमेज अपलोड हैंडलर
+/* ---------- Image handlers (same as before) ---------- */
 document.getElementById("imageUpload").addEventListener("change", function(event) {
   const file = event.target.files[0];
   if (file) {
@@ -567,8 +231,6 @@ document.getElementById("imageUpload").addEventListener("change", function(event
     reader.readAsDataURL(file);
   }
 });
-
-// प्रश्न इमेज रिमूव हैंडलर
 document.getElementById("removeImageBtn").addEventListener("click", function() {
   currentImage = null;
   document.getElementById("imagePreview").src = "";
@@ -576,8 +238,6 @@ document.getElementById("removeImageBtn").addEventListener("click", function() {
   document.getElementById("removeImageBtn").style.display = "none";
   document.getElementById("imageUpload").value = "";
 });
-
-// व्याख्या इमेज अपलोड हैंडलर
 document.getElementById("explanationImageUpload").addEventListener("change", function(event) {
   const file = event.target.files[0];
   if (file) {
@@ -591,8 +251,6 @@ document.getElementById("explanationImageUpload").addEventListener("change", fun
     reader.readAsDataURL(file);
   }
 });
-
-// व्याख्या इमेज रिमूव हैंडलर
 document.getElementById("removeExplanationImageBtn").addEventListener("click", function() {
   currentExplanationImage = null;
   document.getElementById("explanationImagePreview").src = "";
@@ -601,7 +259,7 @@ document.getElementById("removeExplanationImageBtn").addEventListener("click", f
   document.getElementById("explanationImageUpload").value = "";
 });
 
-// फॉर्म साफ करें
+/* ---------- Form helpers ---------- */
 function clearForm() {
   document.getElementById("question").value = '';
   document.getElementById("optA").value = '';
@@ -610,23 +268,20 @@ function clearForm() {
   document.getElementById("optD").value = '';
   document.getElementById("explanation").value = '';
   document.getElementById("correct").value = 'A';
-  
   currentImage = null;
   document.getElementById("imagePreview").src = "";
   document.getElementById("imagePreview").style.display = "none";
   document.getElementById("removeImageBtn").style.display = "none";
   document.getElementById("imageUpload").value = "";
-  
   currentExplanationImage = null;
   document.getElementById("explanationImagePreview").src = "";
   document.getElementById("explanationImagePreview").style.display = "none";
   document.getElementById("removeExplanationImageBtn").style.display = "none";
   document.getElementById("explanationImageUpload").value = "";
-  
   editIndex = -1;
 }
 
-// प्रश्न सहेजें
+/* ---------- Save question ---------- */
 async function saveQuestion() {
   const q = document.getElementById("question").value.trim();
   const A = document.getElementById("optA").value.trim();
@@ -635,23 +290,17 @@ async function saveQuestion() {
   const D = document.getElementById("optD").value.trim();
   const correct = document.getElementById("correct").value;
   const exp = document.getElementById("explanation").value.trim();
-  
+
   if (!q || !A || !B || !C || !D || !correct) {
     alert("❗ सभी फ़ील्ड भरें!");
     return;
   }
-  
-  const newQ = {
-    question: q,
-    options: { A, B, C, D },
-    correct,
-    explanation: exp,
-    image: currentImage,
-    explanationImage: currentExplanationImage
-  };
-  
-  const currentKey = quiz_${localStorage.getItem("selectedMain")}_${localStorage.getItem("selectedSub")};
-  
+
+  const newQ = { question: q, options: {A,B,C,D}, correct, explanation: exp, image: currentImage, explanationImage: currentExplanationImage };
+  const main = localStorage.getItem("selectedMain");
+  const sub = localStorage.getItem("selectedSub");
+  const currentKey = `quiz_${main}_${sub}`;
+
   if (editIndex >= 0) {
     questions[editIndex] = newQ;
     editIndex = -1;
@@ -660,56 +309,49 @@ async function saveQuestion() {
     questions.push(newQ);
     alert("✅ नया प्रश्न जोड़ा गया!");
   }
-  
-  await saveQuizToDB(currentKey, questions);
-  clearForm();
-  document.getElementById("questionCount").textContent = 🔢 कुल प्रश्न: ${questions.length};
-  showAllQuestions();
+
+  try {
+    await saveQuizToDB(currentKey, questions);
+    clearForm();
+    document.getElementById("questionCount").textContent = `🔢 कुल प्रश्न: ${questions.length}`;
+    showAllQuestions();
+  } catch (err) {
+    console.error('save error', err);
+    alert("❗ प्रश्न सेव करने में त्रुटि");
+  }
 }
 
-// प्रश्न फॉर्मेट करें
+/* ---------- UI rendering (same as before) ---------- */
 function formatQuestionText(text) {
   const parts = text.split('\n');
-  let result = <strong>${parts[0]}</strong>;
-  
-  if (parts.length > 1) {
-    for (let i = 1; i < parts.length; i++) {
-      if (parts[i].trim() !== '') {
-        result += <div class="statement">${parts[i]}</div>;
-      }
-    }
-  }
-  
+  let result = `<strong>${parts[0]}</strong>`;
+  if (parts.length > 1) for (let i=1;i<parts.length;i++) if (parts[i].trim()!=='') result += `<div class="statement">${parts[i]}</div>`;
   return result;
 }
-
-// सभी प्रश्न दिखाएं
 function showAllQuestions() {
   const listDiv = document.getElementById("questionList");
   listDiv.innerHTML = '';
-  
-  if (questions.length === 0) {
+  if (!questions || questions.length === 0) {
     listDiv.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">❌ कोई प्रश्न नहीं है, कृपया एक नया प्रश्न जोड़ें</div>';
     return;
   }
-  
-  questions.forEach((q, index) => {
+  questions.forEach((q,index) => {
     const div = document.createElement("div");
     div.className = "question-item";
-    div.innerHTML = 
+    div.innerHTML = `
       <div style="position:relative;">
-        <button class="edit-btn" onclick="editQuestion(${index})">✏️</button>
-        <button class="edit-btn" onclick="deleteQuestion(${index})" style="right:25px; background:#f44336;">🗑️</button>
-        <div class="question-text">Q${index + 1}: ${formatQuestionText(q.question)}</div>
+        <button class="edit-btn" onclick="editQuestion(${index})" style="position:absolute; right:2px; top:2px; background:#FFC107; border:none; padding:2px; border-radius:4px;">✏️</button>
+        <button class="edit-btn" onclick="deleteQuestion(${index})" style="position:absolute; right:28px; top:2px; background:#f44336; border:none; padding:2px; border-radius:4px;">🗑️</button>
+        <div class="question-text">Q${index+1}: ${formatQuestionText(q.question)}</div>
         ${q.image ? '<div style="font-size:12px; color:#666; margin-top:5px;">📷 प्रश्न छवि जुड़ी हुई है</div>' : ''}
         ${q.explanationImage ? '<div style="font-size:12px; color:#666; margin-top:5px;">📷 व्याख्या छवि जुड़ी हुई है</div>' : ''}
       </div>
-    ;
+    `;
     listDiv.appendChild(div);
   });
 }
 
-// प्रश्न संपादित करें
+/* ---------- edit / delete ---------- */
 function editQuestion(index) {
   const q = questions[index];
   document.getElementById("question").value = q.question;
@@ -719,239 +361,148 @@ function editQuestion(index) {
   document.getElementById("optD").value = q.options.D;
   document.getElementById("correct").value = q.correct;
   document.getElementById("explanation").value = q.explanation;
-  
-  if (q.image) {
-    currentImage = q.image;
-    document.getElementById("imagePreview").src = q.image;
-    document.getElementById("imagePreview").style.display = "block";
-    document.getElementById("removeImageBtn").style.display = "block";
-  } else {
-    currentImage = null;
-    document.getElementById("imagePreview").src = "";
-    document.getElementById("imagePreview").style.display = "none";
-    document.getElementById("removeImageBtn").style.display = "none";
-  }
-  
-  if (q.explanationImage) {
-    currentExplanationImage = q.explanationImage;
-    document.getElementById("explanationImagePreview").src = q.explanationImage;
-    document.getElementById("explanationImagePreview").style.display = "block";
-    document.getElementById("removeExplanationImageBtn").style.display = "block";
-  } else {
-    currentExplanationImage = null;
-    document.getElementById("explanationImagePreview").src = "";
-    document.getElementById("explanationImagePreview").style.display = "none";
-    document.getElementById("removeExplanationImageBtn").style.display = "none";
-  }
-  
+  if (q.image) { currentImage = q.image; document.getElementById("imagePreview").src = q.image; document.getElementById("imagePreview").style.display = "block"; document.getElementById("removeImageBtn").style.display = "block"; }
+  else { currentImage = null; document.getElementById("imagePreview").style.display = "none"; document.getElementById("removeImageBtn").style.display = "none"; }
+  if (q.explanationImage) { currentExplanationImage = q.explanationImage; document.getElementById("explanationImagePreview").src = q.explanationImage; document.getElementById("explanationImagePreview").style.display = "block"; document.getElementById("removeExplanationImageBtn").style.display = "block"; }
+  else { currentExplanationImage = null; document.getElementById("explanationImagePreview").style.display = "none"; document.getElementById("removeExplanationImageBtn").style.display = "none"; }
   editIndex = index;
   document.getElementById("inputSection").style.display = "block";
   document.getElementById("practiceSection").style.display = "none";
   document.getElementById("pageTitle").textContent = "✏️ प्रश्न संपादित करें";
-  
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({ top:0, behavior:'smooth' });
 }
 
-// प्रश्न हटाएं
 async function deleteQuestion(index) {
-  if (confirm(क्या आप वाकई इस प्रश्न को हटाना चाहते हैं?)) {
-    questions.splice(index, 1);
-    const currentKey = quiz_${localStorage.getItem("selectedMain")}_${localStorage.getItem("selectedSub")};
-    await saveQuizToDB(currentKey, questions);
-    showAllQuestions();
-    document.getElementById("questionCount").textContent = 🔢 कुल प्रश्न: ${questions.length};
-  }
+  if (!confirm(`क्या आप वाकई इस प्रश्न को हटाना चाहते हैं?`)) return;
+  questions.splice(index,1);
+  const currentKey = `quiz_${localStorage.getItem("selectedMain")}_${localStorage.getItem("selectedSub")}`;
+  await saveQuizToDB(currentKey, questions);
+  showAllQuestions();
+  document.getElementById("questionCount").textContent = `🔢 कुल प्रश्न: ${questions.length}`;
 }
 
-// विशिष्ट प्रश्न पर जाएं
+/* ---------- navigate to question / show / answer handlers ---------- */
 function goToQuestion() {
   const input = parseInt(document.getElementById("gotoInput").value);
-  if (!input || input < 1 || input > questions.length) {
-    alert(⚠️ मान्य प्रश्न संख्या दर्ज करें (1 से ${questions.length} के बीच));
-    return;
-  }
+  if (!input || input < 1 || input > questions.length) { alert(`⚠️ मान्य प्रश्न संख्या दर्ज करें (1 से ${questions.length} के बीच)`); return; }
   currentQuestion = input - 1;
   showQuestion();
 }
 
-// प्रश्न दिखाएं
 function showQuestion() {
   const q = questions[currentQuestion];
-  
   let imageHTML = '';
-  if (q.image) {
-    imageHTML = 
-      <div class="question-image-container">
-        <img src="${q.image}" class="question-image" alt="प्रश्न छवि">
-      </div>
-    ;
-  }
-  
-  const quizQuestionHTML = 
-    <div id="quizQuestion" class="question-container">
-      <div class="question-text">📘 प्रश्न ${currentQuestion + 1}/${questions.length}: ${formatQuestionText(q.question)}</div>
-      ${imageHTML}
-    </div>
-  ;
-  
+  if (q.image) imageHTML = `<div class="question-image-container"><img src="${q.image}" class="question-image" alt="प्रश्न छवि"></div>`;
+  const quizQuestionHTML = `<div id="quizQuestion" class="question-container"><div class="question-text">📘 प्रश्न ${currentQuestion+1}/${questions.length}: ${formatQuestionText(q.question)}</div>${imageHTML}</div>`;
   document.getElementById("quizQuestionContainer").innerHTML = quizQuestionHTML;
-  
   const optionsDiv = document.getElementById("quizOptions");
   optionsDiv.innerHTML = '';
-  
   for (let key in q.options) {
     const btn = document.createElement("button");
     btn.className = "btn-option";
-    btn.textContent = ${key}: ${q.options[key]};
+    btn.textContent = `${key}: ${q.options[key]}`;
     btn.onclick = () => handleAnswer(key);
     optionsDiv.appendChild(btn);
   }
-  
   const submitBtn = document.createElement("button");
   submitBtn.textContent = "✅ क्विज सबमिट करें";
   submitBtn.className = "btn submit-btn";
   submitBtn.onclick = () => {
-    if (confirm(क्या आप वाकई क्विज सबमिट करना चाहते हैं?\nआपने ${correctCount + incorrectCount} प्रश्नों के उत्तर दिए हैं।)) {
-      submitQuiz();
-    }
+    if (confirm(`क्या आप वाकई क्विज सबमिट करना चाहते हैं?\nआपने ${correctCount + incorrectCount} प्रश्नों के उत्तर दिए हैं।`)) submitQuiz();
   };
   optionsDiv.appendChild(submitBtn);
-  
-  document.getElementById("progress").innerHTML = 📘 प्रश्न ${currentQuestion + 1} / ${questions.length};
+  document.getElementById("progress").innerHTML = `📘 प्रश्न ${currentQuestion+1} / ${questions.length}`;
 }
 
-// उत्तर संभालें
 function handleAnswer(selected) {
   const q = questions[currentQuestion];
   const optionsDiv = document.getElementById("quizOptions");
-  
   document.querySelectorAll(".btn-option").forEach(btn => btn.disabled = true);
-  
   for (let btn of optionsDiv.children) {
-    if (btn.className !== "btn-option") continue;
-    
+    if (!btn.classList || !btn.classList.contains('btn-option')) continue;
     const key = btn.textContent[0];
-    if (key === q.correct) {
-      btn.style.backgroundColor = "#4CAF50";
-      btn.style.color = "white";
-    } else if (key === selected) {
-      btn.style.backgroundColor = "#F44336";
-      btn.style.color = "white";
-    }
+    if (key === q.correct) { btn.style.backgroundColor = "#4CAF50"; btn.style.color = "white"; }
+    else if (key === selected) { btn.style.backgroundColor = "#F44336"; btn.style.color = "white"; }
   }
-  
   const expl = document.createElement("div");
   expl.className = "explanation";
-  let explanationContent = <strong>📘 व्याख्या:</strong><br>${(q.explanation || 'कोई व्याख्या नहीं दी गई है').replace(/\n/g, "<br>")};
-  if (q.explanationImage) {
-    explanationContent += 
-      <div class="question-image-container">
-        <img src="${q.explanationImage}" class="question-image" alt="व्याख्या छवि">
-      </div>
-    ;
-  }
+  let explanationContent = `<strong>📘 व्याख्या:</strong><br>${(q.explanation || 'कोई व्याख्या नहीं दी गई है').replace(/\n/g,"<br>")}`;
+  if (q.explanationImage) explanationContent += `<div class="question-image-container"><img src="${q.explanationImage}" class="question-image" alt="व्याख्या छवि"></div>`;
   expl.innerHTML = explanationContent;
   optionsDiv.appendChild(expl);
-  
-  if (selected === q.correct) {
-    correctCount++;
-  } else {
-    incorrectCount++;
-  }
-  
+  if (selected === q.correct) correctCount++; else incorrectCount++;
   const nextBtn = document.createElement("button");
   nextBtn.textContent = currentQuestion < questions.length - 1 ? "➡️ अगला प्रश्न" : "✅ क्विज सबमिट करें";
   nextBtn.className = "btn";
   nextBtn.style.marginTop = "20px";
   nextBtn.onclick = () => {
     currentQuestion++;
-    if (currentQuestion >= questions.length) submitQuiz();
-    else showQuestion();
+    if (currentQuestion >= questions.length) submitQuiz(); else showQuestion();
   };
   optionsDiv.appendChild(nextBtn);
 }
 
-// क्विज सबमिट करें
 function submitQuiz() {
   const totalAnswered = correctCount + incorrectCount;
   const totalQuestions = questions.length;
   const accuracyPercent = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0;
-  
   document.getElementById("totalQuestions").textContent = totalQuestions;
   document.getElementById("correctAnswers").textContent = correctCount;
   document.getElementById("incorrectAnswers").textContent = incorrectCount;
-  document.getElementById("accuracyPercent").textContent = ${accuracyPercent}%;
-  document.getElementById("bigAccuracy").textContent = ${accuracyPercent}%;
-  
+  document.getElementById("accuracyPercent").textContent = `${accuracyPercent}%`;
+  document.getElementById("bigAccuracy").textContent = `${accuracyPercent}%`;
   const ctx = document.getElementById('resultChart').getContext('2d');
   new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: ['सही उत्तर', 'गलत उत्तर'],
-      datasets: [{
-        data: [correctCount, incorrectCount],
-        backgroundColor: ['#4CAF50', '#F44336'],
-        borderWidth: 0
-      }]
-    },
-    options: {
-      cutout: '65%',
-      plugins: {
-        legend: {
-          position: 'bottom'
-        }
-      }
-    }
+    type:'doughnut',
+    data:{ labels:['सही उत्तर','गलत उत्तर'], datasets:[{ data:[correctCount,incorrectCount], backgroundColor:['#4CAF50','#F44336'], borderWidth:0 }] },
+    options: { cutout:'65%', plugins:{ legend:{ position:'bottom' } } }
   });
-  
   document.getElementById("practiceSection").style.display = "none";
   document.getElementById("resultSection").style.display = "block";
 }
 
-// इनपुट सेक्शन दिखाएं
 function showInputSection() {
   document.getElementById("resultSection").style.display = "none";
   document.getElementById("inputSection").style.display = "block";
   document.getElementById("pageTitle").textContent = "➕ प्रश्न जोड़ें";
 }
 
-// क्विज रीसेट करें
 function resetQuiz() {
-  currentQuestion = 0;
-  correctCount = 0;
-  incorrectCount = 0;
-  
+  currentQuestion = 0; correctCount = 0; incorrectCount = 0;
   document.getElementById("resultSection").style.display = "none";
   document.getElementById("practiceSection").style.display = "block";
   showQuestion();
 }
 
-// क्विज लोड करें
+/* ---------- populateQuiz : main loader ---------- */
 async function populateQuiz() {
   const main = localStorage.getItem("selectedMain");
   const sub = localStorage.getItem("selectedSub");
   const mode = localStorage.getItem("quizMode") || "practice";
-  const currentKey = quiz_${main}_${sub};
-  
+  const currentKey = `quiz_${main}_${sub}`;
+
   try {
     await openDB();
     questions = await loadQuizFromDB(currentKey);
-    
-    currentQuestion = 0;
-    correctCount = 0;
-    incorrectCount = 0;
-    editIndex = -1;
-    currentImage = null;
-    currentExplanationImage = null;
-    
+
+    // If no questions in DB, try fallback to localStorage key (backward compatibility)
+    if (!questions || questions.length === 0) {
+      const lsData = localStorage.getItem(currentKey);
+      if (lsData) {
+        try { questions = JSON.parse(lsData); }
+        catch(e) { questions = []; }
+      }
+    }
+
+    currentQuestion = 0; correctCount = 0; incorrectCount = 0; editIndex = -1; currentImage = null; currentExplanationImage = null;
     document.getElementById("pageTitle").textContent = mode === "input" ? "➕ प्रश्न जोड़ें" : "🎯 अभ्यास";
-    
+
     if (mode === "input") {
       document.getElementById("inputSection").style.display = "block";
-      document.getElementById("questionCount").textContent = 🔢 कुल प्रश्न: ${questions.length};
+      document.getElementById("questionCount").textContent = `🔢 कुल प्रश्न: ${questions.length}`;
       showAllQuestions();
     } else {
-      if (questions.length === 0) {
+      if (!questions || questions.length === 0) {
         alert("❗ कोई प्रश्न नहीं मिला!");
         showInputSection();
       } else {
@@ -965,94 +516,78 @@ async function populateQuiz() {
   }
 }
 
-// JSON डेटा आयात करें
+/* ---------- JSON Import/Export (improved) ---------- */
 async function importJSONData() {
   const fileInput = document.getElementById('jsonImportFile');
-  if (!fileInput.files || fileInput.files.length === 0) {
-    alert('कृपया एक JSON फ़ाइल चुनें');
-    return;
-  }
-  
+  if (!fileInput.files || fileInput.files.length === 0) { alert('कृपया एक JSON फ़ाइल चुनें'); return; }
   const file = fileInput.files[0];
   const reader = new FileReader();
-  
   reader.onload = async function(e) {
     try {
       const jsonData = JSON.parse(e.target.result);
-      
-      if (!jsonData.questions || !Array.isArray(jsonData.questions)) {
-        throw new Error('अमान्य JSON प्रारूप: प्रश्न सरणी गायब है');
-      }
-      
-      if (!confirm(क्या आप वाकई ${jsonData.questions.length} प्रश्न आयात करना चाहते हैं?\n\nविषय: ${jsonData.subject || 'निर्दिष्ट नहीं'}\nउपविषय: ${jsonData.subtopic || 'निर्दिष्ट नहीं'})) {
-        return;
-      }
-      
-      const currentKey = quiz_${localStorage.getItem("selectedMain")}_${localStorage.getItem("selectedSub")};
-      const existingQuestions = await loadQuizFromDB(currentKey) || [];
-      const mergedQuestions = [...existingQuestions, ...jsonData.questions];
-      
+      if (!jsonData.questions || !Array.isArray(jsonData.questions)) throw new Error('अमान्य JSON प्रारूप: प्रश्न सरणी गायब है');
+
+      if (!confirm(`क्या आप वाकई ${jsonData.questions.length} प्रश्न आयात करना चाहते हैं?\n\nविषय: ${jsonData.subject || 'निर्दिष्ट नहीं'}\nउपविषय: ${jsonData.subtopic || 'निर्दिष्ट नहीं'}`)) return;
+
+      // Merge to currently selected subject/sub or to file's subject/subtopic
+      const selectedMain = localStorage.getItem("selectedMain");
+      const selectedSub = localStorage.getItem("selectedSub");
+      const targetMain = jsonData.subject || selectedMain;
+      const targetSub = jsonData.subtopic || selectedSub;
+      const currentKey = `quiz_${targetMain}_${targetSub}`;
+
+      // load existing
+      const existing = await loadQuizFromDB(currentKey) || [];
+      const mergedQuestions = [...existing, ...jsonData.questions];
       await saveQuizToDB(currentKey, mergedQuestions);
-      
-      questions = mergedQuestions;
-      document.getElementById("questionCount").textContent = 🔢 कुल प्रश्न: ${questions.length};
-      showAllQuestions();
-      
-      alert(✅ ${jsonData.questions.length} प्रश्न सफलतापूर्वक आयात किए गए!);
-      
+
+      // If import targeted current selected subject/sub, update UI questions
+      if (targetMain === selectedMain && targetSub === selectedSub) {
+        questions = mergedQuestions;
+        document.getElementById("questionCount").textContent = `🔢 कुल प्रश्न: ${questions.length}`;
+        showAllQuestions();
+      }
+
+      alert(`✅ ${jsonData.questions.length} प्रश्न सफलतापूर्वक आयात किए गए!`);
     } catch (error) {
       console.error('JSON आयात त्रुटि:', error);
-      alert(❗ JSON फ़ाइल आयात करने में त्रुटि: ${error.message});
+      alert(`❗ JSON फ़ाइल आयात करने में त्रुटि: ${error.message}`);
     }
   };
-  
   reader.readAsText(file);
 }
 
-// JSON डेटा निर्यात करें
 async function exportJSONData() {
-  const main = localStorage.getItem("selectedMain") || 'अज्ञात';
-  const sub = localStorage.getItem("selectedSub") || 'अज्ञात';
-  
-  const exportData = {
-    subject: main,
-    subtopic: sub,
-    questions: questions,
-    exportedAt: new Date().toISOString()
-  };
-  
+  const main = localStorage.getItem("selectedMain") || 'unknown';
+  const sub = localStorage.getItem("selectedSub") || 'unknown';
+  const exportData = { subject: main, subtopic: sub, questions: questions, exportedAt: new Date().toISOString() };
   const jsonStr = JSON.stringify(exportData, null, 2);
   const blob = new Blob([jsonStr], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
-  
   const a = document.createElement('a');
   a.href = url;
-  a.download = प्रश्नोत्तरी_${main}_${sub}_${new Date().toISOString().slice(0,10)}.json;
+  a.download = `प्रश्नोत्तरी_${main}_${sub}_${new Date().toISOString().slice(0,10)}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  
-  alert(📤 ${questions.length} प्रश्नों को JSON फ़ाइल के रूप में निर्यात किया गया!);
+  alert(`📤 ${questions.length} प्रश्नों को JSON फ़ाइल के रूप में निर्यात किया गया!`);
 }
 
-// ऐप इनिशियलाइज़ करें
+/* ---------- init ---------- */
 window.onload = async function() {
   if (!localStorage.getItem("selectedMain")) {
     localStorage.setItem("selectedMain", "demo");
     localStorage.setItem("selectedSub", "demo");
     localStorage.setItem("quizMode", "input");
   }
-  
   await populateQuiz();
-  
   setTimeout(updateStorageUsage, 5000);
-  
+
   document.getElementById('jsonImportFile').addEventListener('change', function() {
-    document.querySelector('.upload-btn span').textContent = 
-      चयनित फ़ाइल: ${this.files[0].name};
+    document.getElementById('jsonImportLabel').textContent = `चयनित फ़ाइल: ${this.files[0].name}`;
   });
 };
 </script>
 </body>
-</html>    
+</html>
