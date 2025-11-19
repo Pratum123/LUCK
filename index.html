@@ -23,6 +23,7 @@
   <header>Quiz App</header>
   <div class="container">
     <h1>विषय और उपविषय चयन</h1>
+
     <div class="tab-container">
       <div class="tab active" onclick="switchTab('select')">विषय चयन</div>
       <div class="tab" onclick="switchTab('add')">नया जोड़ें</div>
@@ -67,9 +68,7 @@
   </div>
 
 <script>
-// FINAL VERSION - क्रम कभी नहीं बदलेगा (मुख्य + उप दोनों)
-let subjectsArray = [];  // [{name: "geography", subs: ["गंगा", "यमुना", "ब्रह्मपुत्र", ...]}]
-
+let subjectsArray = [];
 const STORAGE_KEY = "QUIZ_ORDER_PERFECT_2025";
 
 function save() {
@@ -83,10 +82,8 @@ function loadAndFixOrder() {
     return;
   }
 
-  // पुराना डेटा है? माइग्रेट करो — लेकिन क्रम गड़बड़ है, तो IndexedDB से रिकवर करो!
   const oldData = localStorage.getItem("quiz_subjects");
   if (!oldData) {
-    // पहली बार
     subjectsArray = [
       { name: "geography", subs: ["भारत की नदियाँ", "विश्व की नदियाँ", "झीलें", "जलवायु"] }
     ];
@@ -95,32 +92,28 @@ function loadAndFixOrder() {
   }
 
   const oldObj = JSON.parse(oldData);
-
-  // क्रम गड़बड़ है → IndexedDB से सही क्रम निकालो (अगर क्विज़ हैं तो)
-  // या फिर यूज़र से पूछो — लेकिन हम सबसे सुरक्षित तरीका अपनाते हैं:
-  // जो क्रम localStorage में पहले से है, वही मान लो (कई यूज़र्स का यही क्रम सही होता है)
   subjectsArray = Object.keys(oldObj).map(main => ({
     name: main,
     subs: oldObj[main] || []
   }));
 
-  // अब यहाँ सबसे महत्वपूर्ण: subs को भी वही क्रम दो जो पहले से था (object से आया है, वो क्रम सही है!)
-  // क्योंकि object की property insertion order ES2015+ में preserved रहता है अगर keys string हैं
-  // तो हम भरोसा करते हैं कि पुराना क्रम सही था
   save();
 }
 
-// बिल्कुल सख्त: कभी sort नहीं करेंगे
+// ✅ आपकी FIX की हुई फंक्शन
 function populateMain() {
   const s1 = document.getElementById("mainSubject");
   const s2 = document.getElementById("manageMain");
-  s1.innerHTML = s2.innerHTML = '<option value="">-- मुख्य विषय चुनें --</option>';
 
-  subjectsArray.forEach(item => {
+  s1.innerHTML = '<option value="">-- मुख्य विषय चुनें --</option>';
+  s2.innerHTML = '<option value="">-- मुख्य विषय चुनें --</option>';
+
+  for (let i = 0; i < subjectsArray.length; i++) {
+    const item = subjectsArray[i];
     const display = item.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     s1.add(new Option(display, item.name));
     s2.add(new Option(display, item.name));
-  });
+  }
 }
 
 function populateSubs(selectId) {
@@ -164,7 +157,7 @@ function addSub() {
 
   const topic = subjectsArray.find(t => t.name === main);
   if (topic.subs.includes(sub)) return alert("पहले से है");
-  topic.subs.push(sub);  // सिर्फ push → क्रम बना रहेगा
+  topic.subs.push(sub);
   save();
   document.getElementById("newSubInput").value = "";
   populateSubList();
@@ -227,7 +220,6 @@ function handleLocalImportFile(e) {
   r.readAsText(file);
 }
 
-// पहली बार लोड → सब ठीक कर दो
 window.onload = function() {
   loadAndFixOrder();
   populateMain();
