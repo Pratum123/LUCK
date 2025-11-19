@@ -144,9 +144,9 @@ function populateMain() {
 
   subjectOrder.forEach(key => {
     if (subjects[key]) {
-      const cap = key.charAt(0).toUpperCase() + key.slice(1);
-      s1.add(new Option(cap, key));
-      s2.add(new Option(cap, key));
+      s1.add(new Option(key, key));
+s2.add(new Option(key, key));
+
     }
   });
 }
