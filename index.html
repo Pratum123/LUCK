@@ -10,17 +10,22 @@
     .container { max-width:500px; margin:20px auto; background:white; padding:15px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
     h1 { text-align:center; color:#3949ab; font-size:20px; margin:10px 0; }
     select,input,button { width:100%; padding:10px; margin:8px 0; border-radius:6px; border:1px solid #ccc; font-size:14px; box-sizing:border-box; }
-    .btn { background:#3949ab; color:white; font-weight:bold; border:none; cursor:pointer; padding:10px; margin:5px 0; }
+    .btn { background:#3949ab; color:white; font-weight:bold; border:none; cursor:pointer; }
     .section { margin-bottom:20px; border:1px solid #e0e0e0; border-radius:8px; padding:12px; }
     .tab-container { display:flex; margin-bottom:15px; }
     .tab { flex:1; text-align:center; padding:8px; background:#e0e0e0; cursor:pointer; border-radius:5px 5px 0 0; margin:0 2px; }
     .tab.active { background:#3949ab; color:white; }
     .tab-content { display:none; }
     .tab-content.active { display:block; }
+    .settings-link { text-align:center; margin:10px 0; }
+    .settings-link a { background:#3949ab; color:white; padding:8px 16px; border-radius:6px; text-decoration:none; font-weight:bold; }
   </style>
 </head>
 <body>
   <header>Quiz App</header>
+  <div class="settings-link">
+    <a href="settings.html">सेटिंग्स</a>
+  </div>
   <div class="container">
     <h1>विषय और उपविषय चयन</h1>
 
@@ -31,6 +36,7 @@
       <div class="tab" onclick="switchTab('backup')">बैकअप</div>
     </div>
 
+    <!-- विषय चयन -->
     <div id="select-tab" class="tab-content active">
       <div class="section">
         <label><strong>मुख्य विषय:</strong></label>
@@ -41,139 +47,158 @@
       </div>
     </div>
 
+    <!-- नया जोड़ें -->
     <div id="add-tab" class="tab-content">
       <div class="section">
-        <input id="newMain" placeholder="मुख्य विषय">
-        <input id="newSubs" placeholder="उपविषय (कॉमा से अलग करें)">
+        <input id="newMain" placeholder="मुख्य विषय (जैसे: भूगोल)">
+        <input id="newSubs" placeholder="उपविषय (कॉमा से अलग: गंगा, यमुना, ब्रह्मपुत्र)">
         <button class="btn" onclick="addNewSubject()">नया विषय जोड़ें</button>
       </div>
     </div>
 
+    <!-- प्रबंधन -->
     <div id="manage-tab" class="tab-content">
       <div class="section">
         <select id="manageMain" onchange="populateSubList()"></select>
         <select id="subList"></select>
-        <input id="newSubInput" placeholder="नया उपविषय जोड़ें">
+        <input id="newSubInput" placeholder="नया उपविषय">
         <button class="btn" onclick="addSub()">उपविषय जोड़ें</button>
         <button class="btn" onclick="deleteSub()">उपविषय हटाएं</button>
       </div>
     </div>
 
+    <!-- बैकअप -->
     <div id="backup-tab" class="tab-content">
       <div class="section">
-        <input type="file" id="importFile" accept=".json" onchange="handleLocalImportFile(event)">
+        <input type="file" id="importFile" accept=".json" onchange="importData()">
         <button class="btn" onclick="exportData()">डेटा निर्यात करें</button>
       </div>
     </div>
   </div>
 
 <script>
-let subjectsArray = [];
-const STORAGE_KEY = "QUIZ_ORDER_PERFECT_2025";
+// ये तरीका सबसे बेस्ट है — क्रम हमेशा वही रहता है
+let subjects = {};
+let subjectOrder = []; // यही जादू है — क्रम यहाँ सेव होता है
 
-function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(subjectsArray));
-}
-
-function loadAndFixOrder() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    subjectsArray = JSON.parse(saved);
-    return;
+// लोड करते समय क्रम भी सेव रखें
+function loadSubjects() {
+  const savedOrder = localStorage.getItem("quiz_subject_order");
+  if (savedOrder) {
+    subjectOrder = JSON.parse(savedOrder);
   }
 
-  const oldData = localStorage.getItem("quiz_subjects");
-  if (!oldData) {
-    subjectsArray = [
-      { name: "geography", subs: ["भारत की नदियाँ", "विश्व की नदियाँ", "झीलें", "जलवायु"] }
-    ];
-    save();
-    return;
-  }
-
-  const oldObj = JSON.parse(oldData);
-  subjectsArray = Object.keys(oldObj).map(main => ({
-    name: main,
-    subs: oldObj[main] || []
-  }));
-
-  save();
-}
-
-// ✅ आपकी FIX की हुई फंक्शन
-function populateMain() {
-  const s1 = document.getElementById("mainSubject");
-  const s2 = document.getElementById("manageMain");
-
-  s1.innerHTML = '<option value="">-- मुख्य विषय चुनें --</option>';
-  s2.innerHTML = '<option value="">-- मुख्य विषय चुनें --</option>';
-
-  for (let i = 0; i < subjectsArray.length; i++) {
-    const item = subjectsArray[i];
-    const display = item.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-    s1.add(new Option(display, item.name));
-    s2.add(new Option(display, item.name));
+  const data = localStorage.getItem("quiz_subjects");
+  if (data) {
+    subjects = JSON.parse(data);
+    // अगर order नहीं है तो सभी keys को उसी क्रम में डाल दो जिस क्रम में पहले थे
+    if (subjectOrder.length === 0) {
+      subjectOrder = Object.keys(subjects);
+      saveOrder();
+    }
+  } else {
+    // पहली बार
+    subjects = {
+      "भूगोल": ["भारत की नदियाँ", "विश्व की नदियाँ", "जलवायु"],
+      "इतिहास": ["प्राचीन भारत", "मध्यकाल", "आधुनिक भारत"],
+      "विज्ञान": ["भौतिकी", "रसायन", "जीवविज्ञान"]
+    };
+    subjectOrder = ["भूगोल", "इतिहास", "विज्ञान"];
+    saveAll();
   }
 }
 
-function populateSubs(selectId) {
-  const main = document.getElementById(selectId === "subSubject" ? "mainSubject" : "manageMain").value;
-  const sel = document.getElementById(selectId);
-  sel.innerHTML = '<option value="">-- उपविषय चुनें --</option>';
-  if (!main) return;
+function saveAll() {
+  localStorage.setItem("quiz_subjects", JSON.stringify(subjects));
+  localStorage.setItem("quiz_subject_order", JSON.stringify(subjectOrder));
+}
 
-  const topic = subjectsArray.find(t => t.name === main);
-  if (topic) {
-    topic.subs.forEach(sub => sel.add(new Option(sub, sub)));
+function saveOrder() {
+  localStorage.setItem("quiz_subject_order", JSON.stringify(subjectOrder));
+}
+
+// Dropdown भरते समय — क्रम बिल्कुल वही!
+function populateDropdowns() {
+  const main = document.getElementById("mainSubject");
+  const manage = document.getElementById("manageMain");
+  main.innerHTML = ""; manage.innerHTML = "";
+
+  main.add(new Option("-- मुख्य विषय चुनें --", ""));
+  manage.add(new Option("-- मुख्य विषय चुनें --", ""));
+
+  subjectOrder.forEach(key => {
+    if (subjects[key]) {
+      const display = key.charAt(0).toUpperCase() + key.slice(1);
+      main.add(new Option(display, key));
+      manage.add(new Option(display, key));
+    }
+  });
+}
+
+function populateSubSubjects() {
+  const key = document.getElementById("mainSubject").value;
+  const select = document.getElementById("subSubject");
+  select.innerHTML = '<option value="">-- उपविषय चुनें --</option>';
+  if (subjects[key]) {
+    subjects[key].forEach(sub => {
+      select.add(new Option(sub, sub));
+    });
   }
 }
 
-function populateSubSubjects() { populateSubs("subSubject"); }
-function populateSubList() { populateSubs("subList"); }
+function populateSubList() {
+  const key = document.getElementById("manageMain").value;
+  const list = document.getElementById("subList");
+  list.innerHTML = '<option value="">-- उपविषय चुनें --</option>';
+  if (subjects[key]) {
+    subjects[key].forEach(sub => {
+      list.add(new Option(sub, sub));
+    });
+  }
+}
 
 function addNewSubject() {
-  let main = document.getElementById("newMain").value.trim();
-  if (!main) return alert("मुख्य विषय भरें");
-  main = main.toLowerCase().replace(/\s+/g, '_');
+  let name = document.getElementById("newMain").value.trim();
+  if (!name) return alert("विषय डालें");
 
-  const subsText = document.getElementById("newSubs").value;
-  const subs = subsText.split(',').map(s => s.trim()).filter(Boolean);
-  if (subs.length === 0) return alert("उपविषय भरें");
+  const subs = document.getElementById("newSubs").value
+    .split(',').map(s => s.trim()).filter(Boolean);
+  if (subs.length === 0) return alert("कम से कम एक उपविषय डालें");
 
-  if (subjectsArray.some(t => t.name === main)) return alert("पहले से मौजूद");
+  if (subjects[name]) return alert("पहले से मौजूद है");
 
-  subjectsArray.push({ name: main, subs });
-  save();
-  document.getElementById("newMain").value = document.getElementById("newSubs").value = "";
-  populateMain();
-  alert("जोड़ा गया!");
+  subjects[name] = subs;
+  subjectOrder.push(name);  // क्रम में लास्ट में डालो
+  saveAll();
+
+  document.getElementById("newMain").value = "";
+  document.getElementById("newSubs").value = "";
+  populateDropdowns();
+  alert("नया विषय जोड़ा गया!");
   switchTab('select');
 }
 
 function addSub() {
-  const main = document.getElementById("manageMain").value;
+  const key = document.getElementById("manageMain").value;
   const sub = document.getElementById("newSubInput").value.trim();
-  if (!main || !sub) return alert("भरें");
-
-  const topic = subjectsArray.find(t => t.name === main);
-  if (topic.subs.includes(sub)) return alert("पहले से है");
-  topic.subs.push(sub);
-  save();
+  if (!key || !sub) return alert("भरें");
+  if (!subjects[key]) subjects[key] = [];
+  if (subjects[key].includes(sub)) return alert("पहले से है");
+  subjects[key].push(sub);
+  saveAll();
   document.getElementById("newSubInput").value = "";
   populateSubList();
-  if (document.getElementById("mainSubject").value === main) populateSubSubjects();
+  if (document.getElementById("mainSubject").value === key) populateSubSubjects();
 }
 
 function deleteSub() {
-  const main = document.getElementById("manageMain").value;
+  const key = document.getElementById("manageMain").value;
   const sub = document.getElementById("subList").value;
-  if (!main || !sub) return alert("चुनें");
-
-  const topic = subjectsArray.find(t => t.name === main);
-  topic.subs = topic.subs.filter(s => s !== sub);
-  save();
+  if (!key || !sub) return alert("चुनें");
+  subjects[key] = subjects[key].filter(s => s !== sub);
+  saveAll();
   populateSubList();
-  if (document.getElementById("mainSubject").value === main) populateSubSubjects();
+  if (document.getElementById("mainSubject").value === key) populateSubSubjects();
 }
 
 function proceedToAction() {
@@ -185,45 +210,51 @@ function proceedToAction() {
   location.href = "action.html";
 }
 
-function switchTab(id) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-  document.getElementById(id + '-tab').classList.add('active');
-  document.querySelector(`.tab[onclick="switchTab('${id}')"]`).classList.add('active');
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(tab + '-tab').classList.add('active');
+  document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
 }
 
 function exportData() {
-  const data = { version: "perfect-order-2025", subjectsArray };
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const data = {
+    subjects: subjects,
+    order: subjectOrder,
+    main: localStorage.getItem("selectedMain"),
+    sub: localStorage.getItem("selectedSub")
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = "quiz_perfect_order_backup.json";
+  a.href = url;
+  a.download = 'quiz_backup_with_order.json';
   a.click();
   URL.revokeObjectURL(url);
 }
 
-function handleLocalImportFile(e) {
-  const file = e.target.files[0];
+function importData() {
+  const file = document.getElementById("importFile").files[0];
   if (!file) return;
   const r = new FileReader();
   r.onload = function() {
     try {
       const json = JSON.parse(r.result);
-      if (json.subjectsArray) {
-        subjectsArray = json.subjectsArray;
-        save();
-        populateMain();
-        alert("परफेक्ट ऑर्डर के साथ बैकअप लोड हुआ!");
+      if (json.subjects) {
+        subjects = json.subjects;
+        subjectOrder = json.order || Object.keys(subjects);
+        saveAll();
+        populateDropdowns();
+        alert("बैकअप सफलतापूर्वक लोड हुआ — क्रम भी सही है!");
       }
-    } catch { alert("गलत फ़ाइल"); }
+    } catch(e) { alert("गलत फ़ाइल"); }
   };
   r.readAsText(file);
 }
 
-window.onload = function() {
-  loadAndFixOrder();
-  populateMain();
-};
+// शुरू में
+loadSubjects();
+populateDropdowns();
 </script>
 </body>
 </html>
