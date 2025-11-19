@@ -109,13 +109,11 @@
 <script>
 let subjects = {};
 let subjectOrder = [];
-let subOrder = {}; // नया: हर main subject के sub-topics का sequence
 
 // Load everything
 function loadSubjects() {
   const order = localStorage.getItem("quiz_subject_order");
   const data = localStorage.getItem("quiz_subjects");
-  const subData = localStorage.getItem("quiz_sub_order");
 
   if (order) subjectOrder = JSON.parse(order);
   if (data) {
@@ -128,21 +126,6 @@ function loadSubjects() {
     // Default data
     subjects = { "भूगोल": ["गंगा", "यमुना"], "इतिहास": ["मौर्य", "मुगल"] };
     subjectOrder = ["भूगोल", "इतिहास"];
-    subOrder = {
-      "भूगोल": ["गंगा", "यमुना"],
-      "इतिहास": ["मौर्य", "मुगल"]
-    };
-    saveAll();
-  }
-
-  // load subOrder if present
-  if (subData) {
-    try { subOrder = JSON.parse(subData); } catch(e) { subOrder = {}; }
-  } else {
-    // अगर subOrder खाली हो और subjects हैं, तो default से भर दें
-    Object.keys(subjects).forEach(k => {
-      if (!subOrder[k]) subOrder[k] = Array.isArray(subjects[k]) ? [...subjects[k]] : [];
-    });
     saveAll();
   }
 }
@@ -150,11 +133,10 @@ function loadSubjects() {
 function saveAll() {
   localStorage.setItem("quiz_subjects", JSON.stringify(subjects));
   localStorage.setItem("quiz_subject_order", JSON.stringify(subjectOrder));
-  localStorage.setItem("quiz_sub_order", JSON.stringify(subOrder));
 }
 function saveOrder() { localStorage.setItem("quiz_subject_order", JSON.stringify(subjectOrder)); }
 
-// Populate main subjects (order-wise, no capitalization)
+// Populate main subjects
 function populateMain() {
   const s1 = document.getElementById("mainSubject");
   const s2 = document.getElementById("manageMain");
@@ -162,27 +144,26 @@ function populateMain() {
 
   subjectOrder.forEach(key => {
     if (subjects[key]) {
-      s1.add(new Option(key, key));
-      s2.add(new Option(key, key));
+      const cap = key.charAt(0).toUpperCase() + key.slice(1);
+      s1.add(new Option(cap, key));
+      s2.add(new Option(cap, key));
     }
   });
 }
 
-// Load sub-topics (use subOrder to preserve sequence)
+// Load sub-topics
 function populateSubSubjects() {
   const key = document.getElementById("mainSubject").value;
   const sel = document.getElementById("subSubject");
   sel.innerHTML = '<option value="">-- उपविषय चुनें --</option>';
-  const list = (subOrder[key] && subOrder[key].length) ? subOrder[key] : (subjects[key] || []);
-  list.forEach(s => sel.add(new Option(s, s)));
+  if (subjects[key]) subjects[key].forEach(s => sel.add(new Option(s, s)));
 }
 
 function loadManageSection() {
   const key = document.getElementById("manageMain").value;
   const list = document.getElementById("subList");
   list.innerHTML = '<option value="">-- उपविषय चुनें --</option>';
-  const arr = (subOrder[key] && subOrder[key].length) ? subOrder[key] : (subjects[key] || []);
-  arr.forEach(s => list.add(new Option(s, s)));
+  if (subjects[key]) subjects[key].forEach(s => list.add(new Option(s, s)));
   document.getElementById("newSubInput").value = "";
   hideAllRename();
 }
@@ -206,21 +187,9 @@ function renameMainSubject() {
   if (!newName || newName === oldName) return alert("नया नाम अलग होना चाहिए");
   if (subjects[newName]) return alert("यह नाम पहले से मौजूद है");
 
-  // move subjects
   subjects[newName] = subjects[oldName];
   delete subjects[oldName];
-
-  // move order in subjectOrder
   subjectOrder = subjectOrder.map(k => k === oldName ? newName : k);
-
-  // move subOrder entry as well
-  if (subOrder[oldName]) {
-    subOrder[newName] = subOrder[oldName];
-    delete subOrder[oldName];
-  } else {
-    subOrder[newName] = subjects[newName] ? [...subjects[newName]] : [];
-  }
-
   saveAll();
   populateMain();
   loadManageSection();
@@ -242,18 +211,9 @@ function renameSubTopic() {
   const newSub = document.getElementById("renameSubNew").value.trim();
 
   if (!newSub || newSub === oldSub) return alert("नया नाम अलग लिखें");
-  // check duplicate
-  const existing = (subOrder[main] || subjects[main] || []);
-  if (existing.includes(newSub)) return alert("यह उपविषय पहले से मौजूद है");
+  if (subjects[main].includes(newSub)) return alert("यह उपविषय पहले से मौजूद है");
 
-  // update in subjects array
-  if (subjects[main]) {
-    subjects[main] = subjects[main].map(s => s === oldSub ? newSub : s);
-  }
-  // update in subOrder array (preserve position)
-  if (!subOrder[main]) subOrder[main] = subjects[main] ? [...subjects[main]] : [];
-  subOrder[main] = subOrder[main].map(s => s === oldSub ? newSub : s);
-
+  subjects[main] = subjects[main].map(s => s === oldSub ? newSub : s);
   saveAll();
   loadManageSection();
   alert(`"${oldSub}" → "${newSub}" नाम बदल दिया गया!`);
@@ -275,10 +235,6 @@ function addNewSubject() {
 
   subjects[name] = subs;
   subjectOrder.push(name);
-
-  // नई subOrder बनाओ
-  subOrder[name] = [...subs];
-
   saveAll();
   document.getElementById("newMain").value = "";
   document.getElementById("newSubs").value = "";
@@ -291,16 +247,8 @@ function addSub() {
   const main = document.getElementById("manageMain").value;
   const sub = document.getElementById("newSubInput").value.trim();
   if (!main || !sub) return alert("भरें");
-  const arr = subOrder[main] && subOrder[main].length ? subOrder[main] : (subjects[main] || []);
-  if (arr.includes(sub)) return alert("पहले से है");
-
-  // update both places
-  if (!subjects[main]) subjects[main] = [];
+  if (subjects[main].includes(sub)) return alert("पहले से है");
   subjects[main].push(sub);
-
-  if (!subOrder[main]) subOrder[main] = [];
-  subOrder[main].push(sub);
-
   saveAll();
   document.getElementById("newSubInput").value = "";
   loadManageSection();
@@ -310,10 +258,7 @@ function deleteSub() {
   const main = document.getElementById("manageMain").value;
   const sub = document.getElementById("subList").value;
   if (!sub) return alert("उपविषय चुनें");
-
-  if (subjects[main]) subjects[main] = subjects[main].filter(s => s !== sub);
-  if (subOrder[main]) subOrder[main] = subOrder[main].filter(s => s !== sub);
-
+  subjects[main] = subjects[main].filter(s => s !== sub);
   saveAll();
   loadManageSection();
 }
@@ -337,7 +282,7 @@ function switchTab(t) {
 
 // Export & Import (order भी सेव रहेगा)
 function exportData() {
-  const data = { subjects, order: subjectOrder, subOrder };
+  const data = { subjects, order: subjectOrder };
   const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -354,16 +299,10 @@ function importData() {
       const d = JSON.parse(r.result);
       subjects = d.subjects || {};
       subjectOrder = d.order || Object.keys(subjects);
-      // support both names: subOrder or quiz_sub_order inside file
-      subOrder = d.subOrder || d.sub_order || {};
-      // if subOrder empty, create from subjects
-      Object.keys(subjects).forEach(k => {
-        if (!subOrder[k]) subOrder[k] = Array.isArray(subjects[k]) ? [...subjects[k]] : [];
-      });
       saveAll();
       populateMain();
       alert("बैकअप लोड हो गया — नाम बदलने का फीचर भी काम करेगा!");
-    } catch (e) { console.error(e); alert("गलत फ़ाइल"); }
+    } catch { alert("गलत फ़ाइल"); }
   };
   r.readAsText(file);
 }
@@ -372,7 +311,5 @@ function importData() {
 loadSubjects();
 populateMain();
 </script>
-
-  
 </body>
-</html>
+</html>   ISAME KYA CHANGE KARE KI TOPIC ALFAWATE NA HO 
