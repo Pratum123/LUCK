@@ -7,8 +7,29 @@
   <style>
     body { font-family: 'Segoe UI', sans-serif; background: #f4f6fb; padding:20px; }
     h1 { text-align:center; color:#3949ab; }
-    .section { background:white; padding:20px; border-radius:12px; box-shadow:0 0 8px rgba(0,0,0,0.1); margin:20px auto; max-width:600px; }
+
+    .section { background:white; padding:20px; border-radius:12px; box-shadow:0 0 8px rgba(0,0,0,0.1); margin:20px auto; max-width:700px; }
+
+    .fileBox {
+      border:1px solid #ccc; padding:15px; border-radius:10px;
+      background:#fff; margin-top:25px;
+    }
+
+    .fileItem {
+      padding:12px; border-bottom:1px solid #eee;
+      display:flex; align-items:center; cursor:pointer;
+    }
+
+    .fileItem:hover {
+      background:#e8eaff;
+    }
+
+    .fileIcon {
+      width:32px; height:32px; margin-right:10px;
+    }
+
     .btn { width:100%; padding:16px; font-size:18px; margin:10px 0; border-radius:8px; border:none; font-weight:bold; background-color:#3949ab; color:white; cursor:pointer; }
+
     .info { margin-bottom:20px; font-size:18px; text-align:center; }
   </style>
 </head>
@@ -25,6 +46,12 @@
       <strong>उपविषय:</strong> <span id="showSub"></span>
     </div>
 
+    <!-- UPLOAD style FILE LIST -->
+    <div class="fileBox">
+      <h3>📂 JSON Files (Upload-Style List View)</h3>
+      <div id="fileList">⏳ Loading...</div>
+    </div>
+
     <button class="btn" onclick="goToQuiz('input')">➕ प्रश्न जोड़ें</button>
     <button class="btn" onclick="goToQuiz('practice')">🎯 अभ्यास करें</button>
   </div>
@@ -38,14 +65,54 @@
     window.location.href = "index.html";
   }
 
-  // show with capitalization if needed
-  document.getElementById("showMain").textContent = main.charAt(0).toUpperCase() + main.slice(1);
+  document.getElementById("showMain").textContent = main;
   document.getElementById("showSub").textContent = sub;
 
   function goToQuiz(mode) {
-    localStorage.setItem("quizMode", mode);  // 'input' या 'practice'
+    localStorage.setItem("quizMode", mode);
     window.location.href = "quiz.html";
   }
+
+  // ============================
+  // UPLOAD STYLE LIST VIEW CODE
+  // ============================
+
+  async function loadJsonFiles() {
+    try {
+      const response = await fetch(`${sub}.json`);
+      if (!response.ok) {
+        document.getElementById("fileList").innerHTML = "⚠️ कोई JSON फाइल नहीं मिली।";
+        return;
+      }
+
+      const jsonData = await response.json();
+
+      let html = "";
+      Object.keys(jsonData).forEach((fileName, index) => {
+        html += `
+          <div class="fileItem" onclick="openFile('${fileName}')">
+            <img class="fileIcon" src="https://img.icons8.com/?size=40&id=59758&format=png">
+            <div>
+              <strong>${fileName}</strong><br>
+              <small>JSON File</small>
+            </div>
+          </div>
+        `;
+      });
+
+      document.getElementById("fileList").innerHTML = html;
+
+    } catch (e) {
+      document.getElementById("fileList").innerHTML = "⚠️ JSON लोड नहीं हुआ!";
+    }
+  }
+
+  function openFile(fileName) {
+    alert("📄 आपने खोला: " + fileName);
+    localStorage.setItem("selectedFile", fileName);
+  }
+
+  loadJsonFiles();
 </script>
 
 </body>
