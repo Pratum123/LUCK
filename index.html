@@ -5,111 +5,23 @@
   <title>📚 विषय चयन</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f6fb;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background: #3949ab;
-      color: white;
-      padding: 15px;
-      font-size: 22px;
-      text-align: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .container {
-      max-width: 500px;
-      margin: 20px auto;
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    h1 {
-      text-align: center;
-      color: #3949ab;
-      font-size: 20px;
-      margin: 10px 0;
-    }
-    select, input, button {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-      box-sizing: border-box;
-    }
-    .btn {
-      background: #3949ab;
-      color: white;
-      font-weight: bold;
-      border: none;
-      cursor: pointer;
-      padding: 10px;
-      margin: 5px 0;
-    }
-    .section {
-      margin-bottom: 20px;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      padding: 12px;
-    }
-    h3 {
-      font-size: 16px;
-      color: #333;
-      margin: 5px 0 10px 0;
-      text-align: center;
-    }
-    .settings-link {
-      text-align: center;
-      margin: 10px 0;
-    }
-    .settings-link a {
-      background: #3949ab;
-      color: white;
-      padding: 6px 12px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: bold;
-      display: inline-block;
-      font-size: 14px;
-    }
-    .tab-container {
-      display: flex;
-      margin-bottom: 15px;
-    }
-    .tab {
-      flex: 1;
-      text-align: center;
-      padding: 8px;
-      background: #e0e0e0;
-      cursor: pointer;
-      border-radius: 5px 5px 0 0;
-      margin: 0 2px;
-    }
-    .tab.active {
-      background: #3949ab;
-      color: white;
-    }
-    .tab-content {
-      display: none;
-    }
-    .tab-content.active {
-      display: block;
-    }
+    body { font-family: 'Segoe UI', sans-serif; background: #f4f6fb; margin:0; padding:0; }
+    header { background: #3949ab; color: white; padding:15px; font-size:22px; text-align:center; position:sticky; top:0; z-index:100; }
+    .container { max-width:500px; margin:20px auto; background:white; padding:15px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
+    h1 { text-align:center; color:#3949ab; font-size:20px; margin:10px 0; }
+    select,input,button { width:100%; padding:10px; margin:8px 0; border-radius:6px; border:1px solid #ccc; font-size:14px; box-sizing:border-box; }
+    .btn { background:#3949ab; color:white; font-weight:bold; border:none; cursor:pointer; padding:10px; margin:5px 0; }
+    .section { margin-bottom:20px; border:1px solid #e0e0e0; border-radius:8px; padding:12px; }
+    .tab-container { display:flex; margin-bottom:15px; }
+    .tab { flex:1; text-align:center; padding:8px; background:#e0e0e0; cursor:pointer; border-radius:5px 5px 0 0; margin:0 2px; }
+    .tab.active { background:#3949ab; color:white; }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+    pre { font-size:12px; }
   </style>
 </head>
 <body>
   <header>📚 Quiz App</header>
-
-  <div class="settings-link">
-    <a href="settings.html">⚙️ सेटिंग्स</a>
-  </div>
 
   <div class="container">
     <h1>📚 विषय और उपविषय चयन</h1>
@@ -154,63 +66,157 @@
       </div>
     </div>
 
-    <!-- लोकल JSON Backup -->
+    <!-- लोकल JSON Backup / Import -->
     <div id="backup-tab" class="tab-content">
       <div class="section">
-        <input type="file" id="importFile" accept=".json" onchange="importData()">
+        <input type="file" id="importFile" accept=".json" onchange="handleLocalImportFile(event)">
         <button class="btn" onclick="exportData()">📥 डेटा निर्यात करें</button>
+        <p style="font-size:13px; color:#444; margin-top:10px;">
+          नोट: JSON फ़ाइल जिसमें "questions" हो, उसे IndexedDB में merge किया जाएगा। यदि JSON में सिर्फ subjects मौजूद हैं तो वो localStorage में बने रहेंगे।
+        </p>
       </div>
     </div>
   </div>
 
 <script>
+/*
+  सुधारित index.html:
+  - IndexedDB (QuizAppDB / quizzes) से सब्जेक्ट/सबटॉपिक्स लोड करेगा
+  - localStorage fallback भी रखेगा (पुराना व्यवहार बरकरार)
+  - JSON import में यदि questions हैं -> IndexedDB में सेव करेगा (merge), अन्यथा localStorage में रखेगा
+*/
+
+// Local subjects object (fallback)
 let subjects = {};
 
-window.onload = () => {
-  if (!localStorage.getItem("quiz_subjects")) {
-    localStorage.setItem("quiz_subjects", JSON.stringify({
-      economics: ["Micro", "Macro"],
-      history: ["Ancient", "Modern"],
-      geography: ["India", "World"]
-    }));
-  }
-  subjects = JSON.parse(localStorage.getItem("quiz_subjects") || "{}");
-  populateDropdowns();
-};
+// IndexedDB constants (same as quiz.html)
+const DB_NAME = 'QuizAppDB';
+const DB_VERSION = 2;
+const STORE_NAME = 'quizzes';
+let db = null;
 
+// सामान्य tab switch
 function switchTab(tabName) {
-  // Hide all tab contents
-  document.querySelectorAll('.tab-content').forEach(content => {
-    content.classList.remove('active');
-  });
-  
-  // Deactivate all tabs
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.classList.remove('active');
-  });
-  
-  // Activate selected tab and content
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById(tabName + '-tab').classList.add('active');
   document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`).classList.add('active');
 }
 
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
+// capitalize
+function capitalize(str){ if(!str) return str; return str.charAt(0).toUpperCase() + str.slice(1); }
+
+// IndexedDB open
+function openDB() {
+  return new Promise((resolve, reject) => {
+    if (db) return resolve(db);
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onerror = (e) => reject(e.target.error);
+    request.onsuccess = (e) => { db = e.target.result; resolve(db); };
+    request.onupgradeneeded = (e) => {
+      db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+      }
+    };
+  });
 }
 
-function populateDropdowns() {
+// DB से सब्जेक्ट और सबटॉपिक निकालो (id parsing से)
+async function loadSubjectsFromDB() {
+  await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const store = tx.objectStore(STORE_NAME);
+    const subjectsSet = new Set();
+    const subtopicsMap = {}; // { subject: Set(...) }
+
+    store.openCursor().onsuccess = (e) => {
+      const cursor = e.target.result;
+      if (cursor) {
+        const item = cursor.value;
+
+        // अगर object में explicit fields हों तो उपयोग करो
+        let main = item.subject || null;
+        let sub = item.subtopic || item.subtopicName || null;
+
+        // अन्यथा id से निकालो: expected "quiz_<main>_<sub...>"
+        if (!main || !sub) {
+          if (typeof item.id === 'string' && item.id.startsWith('quiz_')) {
+            const rest = item.id.slice(5); // remove "quiz_"
+            // split at first underscore: subject could be multiple words separated by spaces originally,
+            // but earlier code used `quiz_${main}_${sub}` where spaces likely preserved.
+            // We'll split at FIRST "_" to be safe: main = before first '_', sub = after.
+            const firstUnd = rest.indexOf('_');
+            if (firstUnd > 0) {
+              main = main || rest.slice(0, firstUnd);
+              sub = sub || rest.slice(firstUnd + 1);
+            } else {
+              // fallback: whole rest as main
+              main = main || rest;
+            }
+          }
+        }
+
+        if (main) {
+          subjectsSet.add(main);
+          if (!subtopicsMap[main]) subtopicsMap[main] = new Set();
+          if (sub) subtopicsMap[main].add(sub);
+        }
+
+        cursor.continue();
+      } else {
+        // cursor finished
+        resolve({ subjectsSet, subtopicsMap });
+      }
+    };
+
+    store.openCursor().onerror = (err) => reject(err);
+  });
+}
+
+// dropdown fill करने का function (merge localStorage subjects + DB)
+async function populateDropdowns() {
+  // load localStorage subjects first
+  const ls = JSON.parse(localStorage.getItem("quiz_subjects") || "{}");
+  subjects = ls && Object.keys(ls).length ? ls : subjects;
+
+  // DB से load कर के merge करो
+  try {
+    const { subjectsSet, subtopicsMap } = await loadSubjectsFromDB();
+
+    // Merge: subjectsSet may have many; merge into 'subjects' object
+    subjectsSet.forEach(s => {
+      if (!subjects[s]) subjects[s] = []; // initialize
+      // add subtopics from map
+      const subsFromDB = Array.from(subtopicsMap[s] || []);
+      subsFromDB.forEach(st => {
+        if (!subjects[s].includes(st)) subjects[s].push(st);
+      });
+    });
+  } catch (err) {
+    console.warn('DB से subjects लोड में त्रुटि:', err);
+  }
+
+  // अगर अब भी subjects खाली हों तो default रखें
+  if (!localStorage.getItem("quiz_subjects") && Object.keys(subjects).length === 0) {
+    subjects = {
+      economics: ["Micro", "Macro"],
+      history: ["Ancient", "Modern"],
+      geography: ["India", "World"]
+    };
+    localStorage.setItem("quiz_subjects", JSON.stringify(subjects));
+  }
+
+  // Populate selects
   const main = document.getElementById("mainSubject");
   const manage = document.getElementById("manageMain");
-
-  // Reset
-  main.innerHTML = "";
-  manage.innerHTML = "";
+  main.innerHTML = ""; manage.innerHTML = "";
   document.getElementById("subSubject").innerHTML = '<option value="">-- उपविषय चुनें --</option>';
   document.getElementById("subList").innerHTML = '<option value="">-- उपविषय चुनें --</option>';
 
-  // Default options
-  main.appendChild(new Option("-- विषय चुनें --", ""));
-  manage.appendChild(new Option("-- विषय चुनें --", ""));
+  main.appendChild(new Option("-- विषय चुनें --",""));
+  manage.appendChild(new Option("-- विषय चुनें --",""));
 
   for (let key in subjects) {
     main.appendChild(new Option(capitalize(key), key));
@@ -218,37 +224,32 @@ function populateDropdowns() {
   }
 }
 
+// जब mainSubject बदले तो sub भरना
 function populateSubSubjects() {
   const subject = document.getElementById("mainSubject").value;
   const subs = subjects[subject] || [];
   const subSelect = document.getElementById("subSubject");
   subSelect.innerHTML = "";
-  subSelect.appendChild(new Option("-- उपविषय चुनें --", ""));
-  subs.forEach(sub => {
-    subSelect.appendChild(new Option(sub, sub));
-  });
+  subSelect.appendChild(new Option("-- उपविषय चुनें --",""));
+  subs.forEach(sub => subSelect.appendChild(new Option(sub, sub)));
 }
 
+// manage के लिए सूची
 function populateSubList() {
   const subject = document.getElementById("manageMain").value;
   const list = document.getElementById("subList");
   list.innerHTML = "";
   list.appendChild(new Option("-- उपविषय चुनें --", ""));
-  if (subjects[subject]) {
-    subjects[subject].forEach(sub => {
-      list.appendChild(new Option(sub, sub));
-    });
-  }
+  if (subjects[subject]) subjects[subject].forEach(sub => list.appendChild(new Option(sub, sub)));
 }
 
+// नया विषय जोड़ना (localStorage में)
 function addNewSubject() {
-  const newMain = document.getElementById("newMain").value.trim().toLowerCase();
+  const newMain = document.getElementById("newMain").value.trim();
   const newSubs = document.getElementById("newSubs").value.split(',').map(s => s.trim()).filter(Boolean);
-  if (!newMain || newSubs.length === 0) {
-    alert("❗ कृपया विषय और उपविषय भरें");
-    return;
-  }
-  subjects[newMain] = newSubs;
+  if (!newMain || newSubs.length === 0) { alert("❗ कृपया विषय और उपविषय भरें"); return; }
+  if (!subjects[newMain]) subjects[newMain] = [];
+  newSubs.forEach(s => { if (!subjects[newMain].includes(s)) subjects[newMain].push(s); });
   localStorage.setItem("quiz_subjects", JSON.stringify(subjects));
   document.getElementById("newMain").value = "";
   document.getElementById("newSubs").value = "";
@@ -257,92 +258,139 @@ function addNewSubject() {
   switchTab('select');
 }
 
+// add sub (manage tab)
 function addSub() {
   const subject = document.getElementById("manageMain").value;
   const newSub = document.getElementById("newSubInput").value.trim();
-  if (!subject || !newSub) {
-    alert("❗ कृपया विषय और उपविषय भरें");
-    return;
-  }
+  if (!subject || !newSub) { alert("❗ कृपया विषय और उपविषय भरें"); return; }
   if (!subjects[subject]) subjects[subject] = [];
-  if (subjects[subject].includes(newSub)) {
-    alert("⚠️ यह उपविषय पहले से मौजूद है");
-    return;
-  }
+  if (subjects[subject].includes(newSub)) { alert("⚠️ यह उपविषय पहले से मौजूद है"); return; }
   subjects[subject].push(newSub);
   localStorage.setItem("quiz_subjects", JSON.stringify(subjects));
   document.getElementById("newSubInput").value = "";
-  populateSubList();
-  populateSubSubjects();
+  populateSubList(); populateSubSubjects();
   alert("✅ उपविषय जोड़ा गया!");
 }
 
+// delete sub
 function deleteSub() {
   const subject = document.getElementById("manageMain").value;
   const sub = document.getElementById("subList").value;
-  if (!subject || !sub) {
-    alert("❗ कृपया विषय और उपविषय चुनें");
-    return;
-  }
+  if (!subject || !sub) { alert("❗ कृपया विषय और उपविषय चुनें"); return; }
   subjects[subject] = subjects[subject].filter(s => s !== sub);
   localStorage.setItem("quiz_subjects", JSON.stringify(subjects));
-  populateSubList();
-  populateSubSubjects();
+  populateSubList(); populateSubSubjects();
   alert("🗑️ उपविषय हटा दिया गया!");
 }
 
+// आगे बढ़ो -> action.html
 function proceedToAction() {
   const main = document.getElementById("mainSubject").value;
   const sub = document.getElementById("subSubject").value;
-  if (!main || !sub) {
-    alert("⚠️ कृपया विषय और उपविषय चुनें!");
-    return;
-  }
+  if (!main || !sub) { alert("⚠️ कृपया विषय और उपविषय चुनें!"); return; }
   localStorage.setItem("selectedMain", main);
   localStorage.setItem("selectedSub", sub);
   window.location.href = "action.html";
 }
 
-function importData() {
-  const file = document.getElementById("importFile").files[0];
+/* ======================
+   Import handling (improved)
+   - अगर JSON में "questions" है => IndexedDB में merge करके सेव करेगा
+   - नहीं तो पुराने जैसा localStorage में quiz_subjects आदि अपलोड करेगा
+   ====================== */
+function handleLocalImportFile(evt) {
+  const file = evt.target.files && evt.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = function(e) {
-    const data = JSON.parse(e.target.result);
-    if (data.subjects) {
-      localStorage.setItem("quiz_subjects", JSON.stringify(data.subjects));
-      subjects = data.subjects;
-    }
-    if (data.main) localStorage.setItem("selectedMain", data.main);
-    if (data.sub) localStorage.setItem("selectedSub", data.sub);
-    if (data.quizData) {
-      for (let key in data.quizData) {
-        localStorage.setItem(key, JSON.stringify(data.quizData[key]));
+  reader.onload = async function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+
+      // अगर JSON में quizData जैसी structure है (keys starting with quiz_) - पुराना localStorage तरीका
+      if (data.subjects || data.quizData) {
+        if (data.subjects) {
+          // old-style subjects object
+          localStorage.setItem("quiz_subjects", JSON.stringify(data.subjects));
+          subjects = data.subjects;
+        }
+        if (data.quizData) {
+          // store quizData keys into localStorage (backward compatibility)
+          for (let key in data.quizData) {
+            localStorage.setItem(key, JSON.stringify(data.quizData[key]));
+          }
+        }
+        alert("✅ पुराना बैकअप लोड हो गया (localStorage)");
+        populateDropdowns();
+        return;
       }
+
+      // अगर JSON में direct questions array है (quiz export schema from quiz.html)
+      if (Array.isArray(data.questions) && (data.subject || data.subtopic)) {
+        // Merge into IndexedDB under key quiz_<subject>_<subtopic>
+        const main = data.subject;
+        const sub = data.subtopic;
+        const key = `quiz_${main}_${sub}`;
+        await openDB();
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+
+        // get existing questions if present
+        const getReq = store.get(key);
+        getReq.onsuccess = async function(ev) {
+          const existing = ev.target.result;
+          let merged = [];
+          if (existing && Array.isArray(existing.questions)) merged = [...existing.questions];
+          // append new questions
+          merged = merged.concat(data.questions);
+          const putReq = store.put({ id: key, questions: merged, lastUpdated: new Date() });
+          putReq.onsuccess = function() {
+            alert(`✅ ${data.questions.length} प्रश्न IndexedDB में merge होकर सेव हो गए!`);
+            // refresh dropdowns after small delay
+            setTimeout(populateDropdowns, 500);
+          };
+          putReq.onerror = function(err) { console.error('put error', err); alert('DB में सेव करने में त्रुटि'); };
+        };
+        getReq.onerror = function(err) { console.error('get error', err); alert('DB पढ़ने में त्रुटि'); };
+        return;
+      }
+
+      // अन्य/अनिश्चित structure -> पुराना fallback: यदि data.quizData keys हैं तो localStorage में डालो
+      if (data.quizData || data.subjects) {
+        if (data.subjects) { localStorage.setItem("quiz_subjects", JSON.stringify(data.subjects)); subjects = data.subjects; }
+        if (data.quizData) { for (let key in data.quizData) localStorage.setItem(key, JSON.stringify(data.quizData[key])); }
+        alert("✅ डेटा import हो गया (fallback localStorage)");
+        populateDropdowns();
+        return;
+      }
+
+      alert("❗ JSON का फॉर्मैट पहचान में नहीं आया। सुनिश्चित करें कि फाइल सही है (subject+subtopic+questions)।");
+    } catch (err) {
+      console.error('Import error', err);
+      alert("❗ JSON पार्स करने में त्रुटि: " + err.message);
     }
-    alert("✅ डेटा लोड हुआ!");
-    populateDropdowns();
   };
   reader.readAsText(file);
 }
 
+// Export: current localStorage subjects + quiz_* keys into a JSON (old behavior preserved)
 function exportData() {
   const data = {
-    subjects: subjects,
+    subjects: JSON.parse(localStorage.getItem("quiz_subjects") || "{}"),
     main: localStorage.getItem("selectedMain"),
     sub: localStorage.getItem("selectedSub"),
     quizData: {}
   };
-  
-  // Add any additional quiz data you want to export
+
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (key.startsWith("quiz_") && key !== "quiz_subjects") {
-      data.quizData[key] = JSON.parse(localStorage.getItem(key));
+    if (key && key.startsWith("quiz_") && key !== "quiz_subjects") {
+      try {
+        data.quizData[key] = JSON.parse(localStorage.getItem(key));
+      } catch (e) { data.quizData[key] = localStorage.getItem(key); }
     }
   }
-  
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -352,6 +400,13 @@ function exportData() {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+
+// On load -> populate from DB + localStorage
+window.addEventListener('load', async () => {
+  // load from localStorage first
+  subjects = JSON.parse(localStorage.getItem("quiz_subjects") || "{}");
+  await populateDropdowns();
+});
 </script>
 </body>
 </html>
