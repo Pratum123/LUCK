@@ -1,3 +1,111 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <title>विषय चयन</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f4f6fb; margin:0; padding:0; }
+    header { background: #3949ab; color: white; padding:15px; font-size:22px; text-align:center; position:sticky; top:0; z-index:100; }
+    .container { max-width:500px; margin:20px auto; background:white; padding:15px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
+    h1 { text-align:center; color:#3949ab; font-size:20px; margin:10px 0; }
+    select,input,button { width:100%; padding:10px; margin:8px 0; border-radius:6px; border:1px solid #ccc; font-size:14px; box-sizing:border-box; }
+    .btn { background:#3949ab; color:white; font-weight:bold; border:none; cursor:pointer; }
+    .btn-small { padding:8px 12px; font-size:13px; width:auto; display:inline-block; margin:5px 2px; }
+    .section { margin-bottom:20px; border:1px solid #e0e0e0; border-radius:8px; padding:12px; }
+    .tab-container { display:flex; margin-bottom:15px; }
+    .tab { flex:1; text-align:center; padding:8px; background:#e0e0e0; cursor:pointer; border-radius:5px 5px 0 0; margin:0 2px; }
+    .tab.active { background:#3949ab; color:white; }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+    .settings-link { text-align:center; margin:10px 0; }
+    .settings-link a { background:#3949ab; color:white; padding:8px 16px; border-radius:6px; text-decoration:none; font-weight:bold; }
+    .rename-box { margin-top:10px; padding:10px; background:#f9f9f9; border-radius:6px; display:none; }
+    .rename-box.show { display:block; }
+  </style>
+</head>
+<body>
+  <header>Quiz App</header>
+  <div class="settings-link">
+    <a href="settings.html">सेटिंग्स</a>
+  </div>
+  <div class="container">
+    <h1>विषय और उपविषय चयन</h1>
+
+    <div class="tab-container">
+      <div class="tab active" onclick="switchTab('select')">विषय चयन</div>
+      <div class="tab" onclick="switchTab('add')">नया जोड़ें</div>
+      <div class="tab" onclick="switchTab('manage')">प्रबंधन</div>
+      <div class="tab" onclick="switchTab('backup')">बैकअप</div>
+    </div>
+
+    <!-- विषय चयन -->
+    <div id="select-tab" class="tab-content active">
+      <div class="section">
+        <label><strong>मुख्य विषय:</strong></label>
+        <select id="mainSubject" onchange="populateSubSubjects()"></select>
+        <label><strong>उपविषय:</strong></label>
+        <select id="subSubject"></select>
+        <button class="btn" onclick="proceedToAction()">आगे बढ़ें</button>
+      </div>
+    </div>
+
+    <!-- नया जोड़ें -->
+    <div id="add-tab" class="tab-content">
+      <div class="section">
+        <input id="newMain" placeholder="मुख्य विषय (जैसे: भूगोल)">
+        <input id="newSubs" placeholder="उपविषय (कॉमा से अलग)">
+        <button class="btn" onclick="addNewSubject()">नया विषय जोड़ें</button>
+      </div>
+    </div>
+
+    <!-- प्रबंधन (Manage + Rename) -->
+    <div id="manage-tab" class="tab-content">
+      <div class="section">
+        <select id="manageMain" onchange="loadManageSection()"></select>
+
+        <!-- Rename Main Subject -->
+        <div style="margin:15px 0;">
+          <button class="btn btn-small" onclick="toggleRenameMain()">नाम बदलें (मुख्य विषय)</button>
+        </div>
+        <div id="renameMainBox" class="rename-box">
+          <input id="renameMainOld" placeholder="पुराना नाम (ऑटो भरेगा)" disabled>
+          <input id="renameMainNew" placeholder="नया नाम लिखें">
+          <button class="btn" onclick="renameMainSubject()">नाम बदलें</button>
+          <button class="btn" style="background:#999;" onclick="toggleRenameMain()">रद्द करें</button>
+        </div>
+
+        <hr>
+
+        <select id="subList" onchange="loadSubRename()"></select>
+
+        <!-- Rename Sub-topic -->
+        <div style="margin:15px 0;">
+          <button class="btn btn-small" onclick="toggleRenameSub()">नाम बदलें (उपविषय)</button>
+          <button class="btn btn-small" onclick="addSub()">उपविषय जोड़ें</button>
+          <button class="btn btn-small" style="background:#e74c3c;" onclick="deleteSub()">उपविषय हटाएं</button>
+        </div>
+
+        <div id="renameSubBox" class="rename-box">
+          <input id="renameSubOld" placeholder="पुराना उपविषय" disabled>
+          <input id="renameSubNew" placeholder="नया नाम लिखें">
+          <button class="btn" onclick="renameSubTopic()">नाम बदलें</button>
+          <button class="btn" style="background:#999;" onclick="toggleRenameSub()">रद्द करें</button>
+        </div>
+
+        <input id="newSubInput" placeholder="नया उपविषय जोड़ें">
+      </div>
+    </div>
+
+    <!-- बैकअप -->
+    <div id="backup-tab" class="tab-content">
+      <div class="section">
+        <input type="file" id="importFile" accept=".json" onchange="importData()">
+        <button class="btn" onclick="exportData()">डेटा निर्यात करें</button>
+      </div>
+    </div>
+  </div>
+
 <script>
 let subjects = {};
 let subjectOrder = [];
@@ -264,3 +372,7 @@ function importData() {
 loadSubjects();
 populateMain();
 </script>
+
+  
+</body>
+</html>
