@@ -2,32 +2,117 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8">
-  <title>विषय चयन</title>
+  <title>📚 विषय चयन</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: 'Segoe UI', sans-serif; background: #f4f6fb; margin:0; padding:0; }
-    header { background: #3949ab; color: white; padding:15px; font-size:22px; text-align:center; position:sticky; top:0; z-index:100; }
-    .container { max-width:500px; margin:20px auto; background:white; padding:15px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
-    h1 { text-align:center; color:#3949ab; font-size:20px; margin:10px 0; }
-    select,input,button { width:100%; padding:10px; margin:8px 0; border-radius:6px; border:1px solid #ccc; font-size:14px; box-sizing:border-box; }
-    .btn { background:#3949ab; color:white; font-weight:bold; border:none; cursor:pointer; }
-    .section { margin-bottom:20px; border:1px solid #e0e0e0; border-radius:8px; padding:12px; }
-    .tab-container { display:flex; margin-bottom:15px; }
-    .tab { flex:1; text-align:center; padding:8px; background:#e0e0e0; cursor:pointer; border-radius:5px 5px 0 0; margin:0 2px; }
-    .tab.active { background:#3949ab; color:white; }
-    .tab-content { display:none; }
-    .tab-content.active { display:block; }
-    .settings-link { text-align:center; margin:10px 0; }
-    .settings-link a { background:#3949ab; color:white; padding:8px 16px; border-radius:6px; text-decoration:none; font-weight:bold; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6fb;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #3949ab;
+      color: white;
+      padding: 15px;
+      font-size: 22px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .container {
+      max-width: 500px;
+      margin: 20px auto;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #3949ab;
+      font-size: 20px;
+      margin: 10px 0;
+    }
+    select, input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    .btn {
+      background: #3949ab;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      padding: 10px;
+      margin: 5px 0;
+    }
+    .section {
+      margin-bottom: 20px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 12px;
+    }
+    h3 {
+      font-size: 16px;
+      color: #333;
+      margin: 5px 0 10px 0;
+      text-align: center;
+    }
+    .settings-link {
+      text-align: center;
+      margin: 10px 0;
+    }
+    .settings-link a {
+      background: #3949ab;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      display: inline-block;
+      font-size: 14px;
+    }
+    .tab-container {
+      display: flex;
+      margin-bottom: 15px;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      background: #e0e0e0;
+      cursor: pointer;
+      border-radius: 5px 5px 0 0;
+      margin: 0 2px;
+    }
+    .tab.active {
+      background: #3949ab;
+      color: white;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
   </style>
 </head>
 <body>
-  <header>Quiz App</header>
+  <header>📚 Quiz App</header>
+
   <div class="settings-link">
-    <a href="settings.html">सेटिंग्स</a>
+    <a href="settings.html">⚙️ सेटिंग्स</a>
   </div>
+
   <div class="container">
-    <h1>विषय और उपविषय चयन</h1>
+    <h1>📚 विषय और उपविषय चयन</h1>
 
     <div class="tab-container">
       <div class="tab active" onclick="switchTab('select')">विषय चयन</div>
@@ -41,220 +126,232 @@
       <div class="section">
         <label><strong>मुख्य विषय:</strong></label>
         <select id="mainSubject" onchange="populateSubSubjects()"></select>
+
         <label><strong>उपविषय:</strong></label>
         <select id="subSubject"></select>
-        <button class="btn" onclick="proceedToAction()">आगे बढ़ें</button>
+
+        <button class="btn" onclick="proceedToAction()">👉 आगे बढ़ें</button>
       </div>
     </div>
 
-    <!-- नया जोड़ें -->
+    <!-- नया विषय जोड़ें -->
     <div id="add-tab" class="tab-content">
       <div class="section">
-        <input id="newMain" placeholder="मुख्य विषय (जैसे: भूगोल)">
-        <input id="newSubs" placeholder="उपविषय (कॉमा से अलग: गंगा, यमुना, ब्रह्मपुत्र)">
-        <button class="btn" onclick="addNewSubject()">नया विषय जोड़ें</button>
+        <input id="newMain" placeholder="मुख्य विषय">
+        <input id="newSubs" placeholder="उपविषय (कॉमा से अलग करें)">
+        <button class="btn" onclick="addNewSubject()">📂 नया विषय जोड़ें</button>
       </div>
     </div>
 
-    <!-- प्रबंधन -->
+    <!-- उपविषय प्रबंधन -->
     <div id="manage-tab" class="tab-content">
       <div class="section">
         <select id="manageMain" onchange="populateSubList()"></select>
         <select id="subList"></select>
-        <input id="newSubInput" placeholder="नया उपविषय">
-        <button class="btn" onclick="addSub()">उपविषय जोड़ें</button>
-        <button class="btn" onclick="deleteSub()">उपविषय हटाएं</button>
+        <input id="newSubInput" placeholder="नया उपविषय जोड़ें">
+        <button class="btn" onclick="addSub()">➕ उपविषय जोड़ें</button>
+        <button class="btn" onclick="deleteSub()">🗑️ उपविषय हटाएं</button>
       </div>
     </div>
 
-    <!-- बैकअप -->
+    <!-- लोकल JSON Backup -->
     <div id="backup-tab" class="tab-content">
       <div class="section">
         <input type="file" id="importFile" accept=".json" onchange="importData()">
-        <button class="btn" onclick="exportData()">डेटा निर्यात करें</button>
+        <button class="btn" onclick="exportData()">📥 डेटा निर्यात करें</button>
       </div>
     </div>
   </div>
 
 <script>
-// ये तरीका सबसे बेस्ट है — क्रम हमेशा वही रहता है
 let subjects = {};
-let subjectOrder = []; // यही जादू है — क्रम यहाँ सेव होता है
 
-// लोड करते समय क्रम भी सेव रखें
-function loadSubjects() {
-  const savedOrder = localStorage.getItem("quiz_subject_order");
-  if (savedOrder) {
-    subjectOrder = JSON.parse(savedOrder);
+window.onload = () => {
+  if (!localStorage.getItem("quiz_subjects")) {
+    localStorage.setItem("quiz_subjects", JSON.stringify({
+      economics: ["Micro", "Macro"],
+      history: ["Ancient", "Modern"],
+      geography: ["India", "World"]
+    }));
   }
+  subjects = JSON.parse(localStorage.getItem("quiz_subjects") || "{}");
+  populateDropdowns();
+};
 
-  const data = localStorage.getItem("quiz_subjects");
-  if (data) {
-    subjects = JSON.parse(data);
-    // अगर order नहीं है तो सभी keys को उसी क्रम में डाल दो जिस क्रम में पहले थे
-    if (subjectOrder.length === 0) {
-      subjectOrder = Object.keys(subjects);
-      saveOrder();
-    }
-  } else {
-    // पहली बार
-    subjects = {
-      "भूगोल": ["भारत की नदियाँ", "विश्व की नदियाँ", "जलवायु"],
-      "इतिहास": ["प्राचीन भारत", "मध्यकाल", "आधुनिक भारत"],
-      "विज्ञान": ["भौतिकी", "रसायन", "जीवविज्ञान"]
-    };
-    subjectOrder = ["भूगोल", "इतिहास", "विज्ञान"];
-    saveAll();
-  }
+function switchTab(tabName) {
+  // Hide all tab contents
+  document.querySelectorAll('.tab-content').forEach(content => {
+    content.classList.remove('active');
+  });
+  
+  // Deactivate all tabs
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.classList.remove('active');
+  });
+  
+  // Activate selected tab and content
+  document.getElementById(tabName + '-tab').classList.add('active');
+  document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`).classList.add('active');
 }
 
-function saveAll() {
-  localStorage.setItem("quiz_subjects", JSON.stringify(subjects));
-  localStorage.setItem("quiz_subject_order", JSON.stringify(subjectOrder));
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-function saveOrder() {
-  localStorage.setItem("quiz_subject_order", JSON.stringify(subjectOrder));
-}
-
-// Dropdown भरते समय — क्रम बिल्कुल वही!
 function populateDropdowns() {
   const main = document.getElementById("mainSubject");
   const manage = document.getElementById("manageMain");
-  main.innerHTML = ""; manage.innerHTML = "";
 
-  main.add(new Option("-- मुख्य विषय चुनें --", ""));
-  manage.add(new Option("-- मुख्य विषय चुनें --", ""));
+  // Reset
+  main.innerHTML = "";
+  manage.innerHTML = "";
+  document.getElementById("subSubject").innerHTML = '<option value="">-- उपविषय चुनें --</option>';
+  document.getElementById("subList").innerHTML = '<option value="">-- उपविषय चुनें --</option>';
 
-  subjectOrder.forEach(key => {
-    if (subjects[key]) {
-      const display = key.charAt(0).toUpperCase() + key.slice(1);
-      main.add(new Option(display, key));
-      manage.add(new Option(display, key));
-    }
-  });
-}
+  // Default options
+  main.appendChild(new Option("-- विषय चुनें --", ""));
+  manage.appendChild(new Option("-- विषय चुनें --", ""));
 
-function populateSubSubjects() {
-  const key = document.getElementById("mainSubject").value;
-  const select = document.getElementById("subSubject");
-  select.innerHTML = '<option value="">-- उपविषय चुनें --</option>';
-  if (subjects[key]) {
-    subjects[key].forEach(sub => {
-      select.add(new Option(sub, sub));
-    });
+  for (let key in subjects) {
+    main.appendChild(new Option(capitalize(key), key));
+    manage.appendChild(new Option(capitalize(key), key));
   }
 }
 
+function populateSubSubjects() {
+  const subject = document.getElementById("mainSubject").value;
+  const subs = subjects[subject] || [];
+  const subSelect = document.getElementById("subSubject");
+  subSelect.innerHTML = "";
+  subSelect.appendChild(new Option("-- उपविषय चुनें --", ""));
+  subs.forEach(sub => {
+    subSelect.appendChild(new Option(sub, sub));
+  });
+}
+
 function populateSubList() {
-  const key = document.getElementById("manageMain").value;
+  const subject = document.getElementById("manageMain").value;
   const list = document.getElementById("subList");
-  list.innerHTML = '<option value="">-- उपविषय चुनें --</option>';
-  if (subjects[key]) {
-    subjects[key].forEach(sub => {
-      list.add(new Option(sub, sub));
+  list.innerHTML = "";
+  list.appendChild(new Option("-- उपविषय चुनें --", ""));
+  if (subjects[subject]) {
+    subjects[subject].forEach(sub => {
+      list.appendChild(new Option(sub, sub));
     });
   }
 }
 
 function addNewSubject() {
-  let name = document.getElementById("newMain").value.trim();
-  if (!name) return alert("विषय डालें");
-
-  const subs = document.getElementById("newSubs").value
-    .split(',').map(s => s.trim()).filter(Boolean);
-  if (subs.length === 0) return alert("कम से कम एक उपविषय डालें");
-
-  if (subjects[name]) return alert("पहले से मौजूद है");
-
-  subjects[name] = subs;
-  subjectOrder.push(name);  // क्रम में लास्ट में डालो
-  saveAll();
-
+  const newMain = document.getElementById("newMain").value.trim().toLowerCase();
+  const newSubs = document.getElementById("newSubs").value.split(',').map(s => s.trim()).filter(Boolean);
+  if (!newMain || newSubs.length === 0) {
+    alert("❗ कृपया विषय और उपविषय भरें");
+    return;
+  }
+  subjects[newMain] = newSubs;
+  localStorage.setItem("quiz_subjects", JSON.stringify(subjects));
   document.getElementById("newMain").value = "";
   document.getElementById("newSubs").value = "";
   populateDropdowns();
-  alert("नया विषय जोड़ा गया!");
+  alert("✅ नया विषय जोड़ा गया!");
   switchTab('select');
 }
 
 function addSub() {
-  const key = document.getElementById("manageMain").value;
-  const sub = document.getElementById("newSubInput").value.trim();
-  if (!key || !sub) return alert("भरें");
-  if (!subjects[key]) subjects[key] = [];
-  if (subjects[key].includes(sub)) return alert("पहले से है");
-  subjects[key].push(sub);
-  saveAll();
+  const subject = document.getElementById("manageMain").value;
+  const newSub = document.getElementById("newSubInput").value.trim();
+  if (!subject || !newSub) {
+    alert("❗ कृपया विषय और उपविषय भरें");
+    return;
+  }
+  if (!subjects[subject]) subjects[subject] = [];
+  if (subjects[subject].includes(newSub)) {
+    alert("⚠️ यह उपविषय पहले से मौजूद है");
+    return;
+  }
+  subjects[subject].push(newSub);
+  localStorage.setItem("quiz_subjects", JSON.stringify(subjects));
   document.getElementById("newSubInput").value = "";
   populateSubList();
-  if (document.getElementById("mainSubject").value === key) populateSubSubjects();
+  populateSubSubjects();
+  alert("✅ उपविषय जोड़ा गया!");
 }
 
 function deleteSub() {
-  const key = document.getElementById("manageMain").value;
+  const subject = document.getElementById("manageMain").value;
   const sub = document.getElementById("subList").value;
-  if (!key || !sub) return alert("चुनें");
-  subjects[key] = subjects[key].filter(s => s !== sub);
-  saveAll();
+  if (!subject || !sub) {
+    alert("❗ कृपया विषय और उपविषय चुनें");
+    return;
+  }
+  subjects[subject] = subjects[subject].filter(s => s !== sub);
+  localStorage.setItem("quiz_subjects", JSON.stringify(subjects));
   populateSubList();
-  if (document.getElementById("mainSubject").value === key) populateSubSubjects();
+  populateSubSubjects();
+  alert("🗑️ उपविषय हटा दिया गया!");
 }
 
 function proceedToAction() {
   const main = document.getElementById("mainSubject").value;
   const sub = document.getElementById("subSubject").value;
-  if (!main || !sub) return alert("दोनों चुनें");
+  if (!main || !sub) {
+    alert("⚠️ कृपया विषय और उपविषय चुनें!");
+    return;
+  }
   localStorage.setItem("selectedMain", main);
   localStorage.setItem("selectedSub", sub);
-  location.href = "action.html";
-}
-
-function switchTab(tab) {
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById(tab + '-tab').classList.add('active');
-  document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
-}
-
-function exportData() {
-  const data = {
-    subjects: subjects,
-    order: subjectOrder,
-    main: localStorage.getItem("selectedMain"),
-    sub: localStorage.getItem("selectedSub")
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'quiz_backup_with_order.json';
-  a.click();
-  URL.revokeObjectURL(url);
+  window.location.href = "action.html";
 }
 
 function importData() {
   const file = document.getElementById("importFile").files[0];
   if (!file) return;
-  const r = new FileReader();
-  r.onload = function() {
-    try {
-      const json = JSON.parse(r.result);
-      if (json.subjects) {
-        subjects = json.subjects;
-        subjectOrder = json.order || Object.keys(subjects);
-        saveAll();
-        populateDropdowns();
-        alert("बैकअप सफलतापूर्वक लोड हुआ — क्रम भी सही है!");
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = JSON.parse(e.target.result);
+    if (data.subjects) {
+      localStorage.setItem("quiz_subjects", JSON.stringify(data.subjects));
+      subjects = data.subjects;
+    }
+    if (data.main) localStorage.setItem("selectedMain", data.main);
+    if (data.sub) localStorage.setItem("selectedSub", data.sub);
+    if (data.quizData) {
+      for (let key in data.quizData) {
+        localStorage.setItem(key, JSON.stringify(data.quizData[key]));
       }
-    } catch(e) { alert("गलत फ़ाइल"); }
+    }
+    alert("✅ डेटा लोड हुआ!");
+    populateDropdowns();
   };
-  r.readAsText(file);
+  reader.readAsText(file);
 }
 
-// शुरू में
-loadSubjects();
-populateDropdowns();
+function exportData() {
+  const data = {
+    subjects: subjects,
+    main: localStorage.getItem("selectedMain"),
+    sub: localStorage.getItem("selectedSub"),
+    quizData: {}
+  };
+  
+  // Add any additional quiz data you want to export
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith("quiz_") && key !== "quiz_subjects") {
+      data.quizData[key] = JSON.parse(localStorage.getItem(key));
+    }
+  }
+  
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'quiz_backup_' + new Date().toISOString().slice(0,10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 </script>
 </body>
 </html>
