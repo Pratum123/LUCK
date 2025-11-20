@@ -12,8 +12,8 @@
     select,input,button { width:100%; padding:10px; margin:8px 0; border-radius:6px; border:1px solid #ccc; font-size:14px; box-sizing:border-box; }
     .btn { background:#3949ab; color:white; font-weight:bold; border:none; cursor:pointer; padding:10px; margin:5px 0; }
     .section { margin-bottom:20px; border:1px solid #e0e0e0; border-radius:8px; padding:12px; }
-    .tab-container { display:flex; margin-bottom:15px; }
-    .tab { flex:1; text-align:center; padding:8px; background:#e0e0e0; cursor:pointer; border-radius:5px 5px 0 0; margin:0 2px; }
+    .tab-container { display:flex; margin-bottom:15px; flex-wrap:wrap; }
+    .tab { flex:1; text-align:center; padding:8px; background:#e0e0e0; cursor:pointer; border-radius:5px 5px 0 0; margin:2px; min-width:80px; }
     .tab.active { background:#3949ab; color:white; }
     .tab-content { display:none; }
     .tab-content.active { display:block; }
@@ -22,10 +22,8 @@
 </head>
 <body>
   <header>📚 Quiz App</header>
-
   <div class="container">
     <h1>📚 विषय और उपविषय चयन</h1>
-
     <div class="tab-container">
       <div class="tab active" onclick="switchTab('select')">विषय चयन</div>
       <div class="tab" onclick="switchTab('add')">नया जोड़ें</div>
@@ -38,10 +36,8 @@
       <div class="section">
         <label><strong>मुख्य विषय:</strong></label>
         <select id="mainSubject" onchange="populateSubSubjects()"></select>
-
         <label><strong>उपविषय:</strong></label>
         <select id="subSubject"></select>
-
         <button class="btn" onclick="proceedToAction()">👉 आगे बढ़ें</button>
       </div>
     </div>
@@ -60,19 +56,19 @@
       <div class="section">
         <select id="manageMain" onchange="populateSubList()"></select>
         <select id="subList"></select>
-
+        
         <input id="newSubInput" placeholder="नया उपविषय जोड़ें">
         <button class="btn" onclick="addSub()">➕ उपविषय जोड़ें</button>
         <button class="btn" onclick="deleteSub()">🗑️ उपविषय हटाएं</button>
-
+        <button class="btn" onclick="renameSubtopic()">✏️ उपविषय नाम बदलें</button> <!-- नया बटन -->
+        
         <hr>
-
-        <input id="renameMainInput" placeholder="नया विषय नाम लिखें">
-        <button class="btn" onclick="renameSubject()">✏️ विषय नाम बदलें</button>
+        <input id="renameMainInput" placeholder="नया मुख्य विषय नाम लिखें">
+        <button class="btn" onclick="renameSubject()">✏️ मुख्य विषय नाम बदलें</button>
       </div>
     </div>
 
-    <!-- लोकल JSON Backup / Import -->
+    <!-- बैकअप -->
     <div id="backup-tab" class="tab-content">
       <div class="section">
         <input type="file" id="importFile" accept=".json" onchange="handleLocalImportFile(event)">
@@ -81,9 +77,7 @@
     </div>
   </div>
 
-
 <script>
-
 /* ===============================
    GLOBAL + DEFAULT SETTINGS
 ================================ */
@@ -106,7 +100,6 @@ function switchTab(tabName) {
 }
 
 function capitalize(str){ return str ? str.charAt(0).toUpperCase() + str.slice(1) : str; }
-
 
 /* ===============================
    IndexedDB Open
@@ -136,14 +129,12 @@ async function loadSubjectsFromDB() {
     const store = tx.objectStore(STORE_NAME);
     const subjectsSet = new Set();
     const subtopicsMap = {};
-
     store.openCursor().onsuccess = (e) => {
       const cursor = e.target.result;
       if (cursor) {
         const item = cursor.value;
         let main = item.subject || null;
         let sub = item.subtopic || item.subtopicName || null;
-
         if (!main || !sub) {
           if (item.id.startsWith("quiz_")) {
             const rest = item.id.slice(5);
@@ -154,7 +145,6 @@ async function loadSubjectsFromDB() {
             }
           }
         }
-
         if (main) {
           subjectsSet.add(main);
           if (!subtopicsMap[main]) subtopicsMap[main] = new Set();
@@ -174,7 +164,6 @@ async function loadSubjectsFromDB() {
 async function populateDropdowns() {
   const ls = JSON.parse(localStorage.getItem("quiz_subjects") || "{}");
   subjects = Object.keys(ls).length ? ls : subjects;
-
   try {
     const { subjectsSet, subtopicsMap } = await loadSubjectsFromDB();
     subjectsSet.forEach(s => {
@@ -186,10 +175,7 @@ async function populateDropdowns() {
 
   const main = document.getElementById("mainSubject");
   const manage = document.getElementById("manageMain");
-
-  main.innerHTML = "";
-  manage.innerHTML = "";
-
+  main.innerHTML = ""; manage.innerHTML = "";
   main.appendChild(new Option("-- विषय चुनें --",""));
   manage.appendChild(new Option("-- विषय चुनें --",""));
 
@@ -218,23 +204,18 @@ function populateSubList() {
 }
 
 /* ===============================
-   Add / Delete / Rename Subject
+   Add / Delete / Rename Subject & Subtopic
 ================================ */
-
 function addNewSubject() {
   const newMain = document.getElementById("newMain").value.trim();
   const newSubs = document.getElementById("newSubs").value.split(',').map(s => s.trim()).filter(Boolean);
-
   if (!newMain || newSubs.length === 0) return alert("❗ कृपया विषय और उपविषय भरें");
-
   if (!subjects[newMain]) subjects[newMain] = [];
   newSubs.forEach(s => { if (!subjects[newMain].includes(s)) subjects[newMain].push(s); });
-
+  subjects[newMain].sort(naturalSort);
   localStorage.setItem("quiz_subjects", JSON.stringify(subjects));
-
   document.getElementById("newMain").value = "";
   document.getElementById("newSubs").value = "";
-
   populateDropdowns();
   alert("✅ नया विषय जोड़ा गया!");
   switchTab('select');
@@ -243,15 +224,12 @@ function addNewSubject() {
 function addSub() {
   const subject = document.getElementById("manageMain").value;
   const newSub = document.getElementById("newSubInput").value.trim();
-
   if (!subject || !newSub) return alert("❗ कृपया विषय और उपविषय भरें");
   if (subjects[subject].includes(newSub)) return alert("⚠️ यह उपविषय पहले से मौजूद है");
-
   subjects[subject].push(newSub);
+  subjects[subject].sort(naturalSort);
   localStorage.setItem("quiz_subjects", JSON.stringify(subjects));
-
   document.getElementById("newSubInput").value = "";
-
   populateSubList();
   populateSubSubjects();
   alert("✅ उपविषय जोड़ा गया!");
@@ -260,41 +238,51 @@ function addSub() {
 function deleteSub() {
   const subject = document.getElementById("manageMain").value;
   const sub = document.getElementById("subList").value;
-
   if (!subject || !sub) return alert("❗ कृपया विषय और उपविषय चुनें");
-
   subjects[subject] = subjects[subject].filter(s => s !== sub);
   localStorage.setItem("quiz_subjects", JSON.stringify(subjects));
-
   populateSubList();
   populateSubSubjects();
   alert("🗑️ उपविषय हटा दिया गया!");
 }
 
-/* ===============================
-   SUBJECT RENAME FUNCTION
-================================ */
+/* ===== उपविषय का नाम बदलें (नया फीचर) ===== */
+function renameSubtopic() {
+  const subject = document.getElementById("manageMain").value;
+  const oldSub = document.getElementById("subList").value;
+
+  if (!subject || !oldSub) return alert("❗ पहले मुख्य विषय और उपविषय चुनें");
+
+  const newSubName = prompt(`पुराना नाम: "${oldSub}"\nनया उपविषय नाम लिखें:`, oldSub);
+  if (newSubName === null) return; // cancel
+  const newSub = newSubName.trim();
+  if (!newSub) return alert("❗ नया नाम खाली नहीं हो सकता");
+  if (subjects[subject].includes(newSub)) return alert("⚠️ यह उपविषय पहले से मौजूद है!");
+
+  // पुराना हटाओ, नया जोड़ो, फिर से सॉर्ट करो
+  subjects[subject] = subjects[subject].filter(s => s !== oldSub);
+  subjects[subject].push(newSub);
+  subjects[subject].sort(naturalSort);
+
+  localStorage.setItem("quiz_subjects", JSON.stringify(subjects));
+  populateSubList();
+  populateSubSubjects();
+  alert(`✅ उपविषय "${oldSub}" का नाम बदलकर "${newSub}" कर दिया गया!`);
+}
+
+/* ===== मुख्य विषय का नाम बदलें ===== */
 function renameSubject() {
   const oldName = document.getElementById("manageMain").value;
   const newName = document.getElementById("renameMainInput").value.trim();
-
-  if (!oldName || !newName)
-    return alert("❗ कृपया पुराना और नया विषय नाम भरें");
-
-  if (subjects[newName])
-    return alert("⚠️ यह विषय पहले से मौजूद है!");
-
+  if (!oldName || !newName) return alert("❗ कृपया पुराना और नया विषय नाम भरें");
+  if (subjects[newName]) return alert("⚠️ यह विषय पहले से मौजूद है!");
   subjects[newName] = subjects[oldName];
   delete subjects[oldName];
-
   localStorage.setItem("quiz_subjects", JSON.stringify(subjects));
-
   alert(`✅ "${oldName}" का नाम बदलकर "${newName}" कर दिया गया!`);
-
   document.getElementById("renameMainInput").value = "";
   populateDropdowns();
 }
-
 
 /* ===============================
    Open next page
@@ -303,22 +291,19 @@ function proceedToAction() {
   const main = document.getElementById("mainSubject").value;
   const sub = document.getElementById("subSubject").value;
   if (!main || !sub) return alert("⚠️ कृपया विषय और उपविषय चुनें!");
-
   localStorage.setItem("selectedMain", main);
   localStorage.setItem("selectedSub", sub);
   window.location.href = "action.html";
 }
 
 /* ===============================
-   IMPORT & EXPORT
+   IMPORT & EXPORT (आप बाद में पूरा कर सकते हैं)
 ================================ */
-
 function handleLocalImportFile(evt) {
-  alert("⚠️ Import system same रखा है — rename + sorting से कोई टकराव नहीं होगा।");
+  alert("⚠️ Import फीचर अभी डेवलपमेंट में है।");
 }
-
 function exportData() {
-  alert("⚠️ Export system same रखा है — सिर्फ subjects अपडेट होंगे।");
+  alert("⚠️ Export फीचर अभी डेवलपमेंट में है।");
 }
 
 /* ===============================
@@ -328,7 +313,6 @@ window.addEventListener('load', async () => {
   subjects = JSON.parse(localStorage.getItem("quiz_subjects") || "{}");
   await populateDropdowns();
 });
-
 </script>
 </body>
 </html>
