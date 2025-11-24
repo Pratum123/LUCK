@@ -20,7 +20,7 @@
     .tab-content.active{display:block}
     @media (max-width: 480px){
       .tab{font-size:15px;padding:12px}
-      select,input,button{font-size:16px} /* मोबाइल में टच आसान हो */
+      select,input,button{font-size:16px}
     }
   </style>
 </head>
@@ -40,10 +40,14 @@
     <div id="select-tab" class="tab-content active">
       <div class="section">
         <label><strong>मुख्य विषय:</strong></label>
-        <select id="mainSubject" onchange="populateSubSubjects()"></select>
+        <select id="mainSubject">
+          <option value="">-- विषय चुनें --</option>
+        </select>
 
         <label><strong>उपविषय:</strong></label>
-        <select id="subSubject"></select>
+        <select id="subSubject">
+          <option value="">-- उपविषय चुनें --</option>
+        </select>
 
         <button class="btn" onclick="proceedToAction()">👉 आगे बढ़ें</button>
       </div>
@@ -61,8 +65,13 @@
     <!-- प्रबंधन टैब -->
     <div id="manage-tab" class="tab-content">
       <div class="section">
-        <select id="manageMain" onchange="populateSubList()"></select>
-        <select id="subList"></select>
+        <select id="manageMain">
+          <option value="">-- विषय चुनें --</option>
+        </select>
+
+        <select id="subList">
+          <option value="">-- उपविषय चुनें --</option>
+        </select>
 
         <input id="newSubInput" placeholder="नया उपविषय नाम">
         <button class="btn" onclick="addSub()">➕ उपविषय जोड़ें</button>
@@ -143,10 +152,13 @@ async function populateDropdowns(){
       subtopicsMap[main].forEach(st=>{ if(!subjects[main].includes(st)) subjects[main].push(st); });
     });
   }catch(e){console.log(e);}
-  
+
   const m1 = document.getElementById("mainSubject");
   const m2 = document.getElementById("manageMain");
-  m1.innerHTML = m2.innerHTML = "<option>-- विषय चुनें --</option>";
+
+  m1.innerHTML = `<option value="">-- विषय चुनें --</option>`;
+  m2.innerHTML = `<option value="">-- विषय चुनें --</option>`;
+
   Object.keys(subjects).sort(naturalSort).forEach(k=>{
     m1.add(new Option(k,k));
     m2.add(new Option(k,k));
@@ -155,19 +167,18 @@ async function populateDropdowns(){
 
 function populateSubSubjects(){
   const sub = document.getElementById("subSubject");
-  sub.innerHTML = "<option>-- उपविषय चुनें --</option>";
+  sub.innerHTML = `<option value="">-- उपविषय चुनें --</option>`;
   const s = document.getElementById("mainSubject").value;
   (subjects[s] || []).sort(naturalSort).forEach(x => sub.add(new Option(x,x)));
 }
 
 function populateSubList(){
   const list = document.getElementById("subList");
-  list.innerHTML = "<option>-- उपविषय चुनें --</option>";
+  list.innerHTML = `<option value="">-- उपविषय चुनें --</option>`;
   const s = document.getElementById("manageMain").value;
   (subjects[s] || []).sort(naturalSort).forEach(x => list.add(new Option(x,x)));
 }
 
-// सभी फंक्शन पूरे और सही
 function addNewSubject(){
   const newMain = document.getElementById("newMain").value.trim();
   const subs = document.getElementById("newSubs").value.split(',').map(s=>s.trim()).filter(Boolean);
@@ -229,13 +240,11 @@ async function renameSubtopic(){
   if(!newSub || newSub === oldSub) return;
   if(subjects[subject].includes(newSub)) return alert("⚠️ यह नाम पहले से मौजूद है");
 
-  // localStorage अपडेट
   subjects[subject] = subjects[subject].filter(s => s !== oldSub);
   subjects[subject].push(newSub);
   subjects[subject].sort(naturalSort);
   localStorage.setItem("quiz_subjects", JSON.stringify(subjects));
 
-  // IndexedDB में सभी पुराने रिकॉर्ड अपडेट करें
   try{
     await openDB();
     const tx = db.transaction(STORE_NAME, "readwrite");
@@ -279,10 +288,8 @@ function proceedToAction(){
 }
 
 function exportData(){
-  // अभी सिर्फ localStorage का बैकअप
   const data = {
     subjects: JSON.parse(localStorage.getItem("quiz_subjects") || "{}"),
-    // आगे चलकर IndexedDB भी जोड़ सकते हैं
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
   const url = URL.createObjectURL(blob);
@@ -321,4 +328,3 @@ window.addEventListener('load', populateDropdowns);
 </script>
 </body>
 </html>
-
